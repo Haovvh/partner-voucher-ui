@@ -1,1 +1,3 @@
-# partner-voucher-ui
+npm install
+<br>
+npm start
