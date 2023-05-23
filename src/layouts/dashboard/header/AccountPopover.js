@@ -34,7 +34,7 @@ export default function AccountPopover() {
     setOpen(null);
   };
   useEffect(() =>{
-    setUserInfo(headerService.GetUser().data)
+    setUserInfo(headerService.GetUser().data.account)
     
     
   }, [])

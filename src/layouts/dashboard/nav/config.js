@@ -28,6 +28,16 @@ const navConfig = [
     icon: icon('ic_cart'),
   },
   {
+    title: 'ProductCategory',
+    path: '/productCategory',
+    icon: icon('ic_cart'),
+  }, 
+  {
+    title: 'ProductItem',
+    path: '/productitem',
+    icon: icon('ic_cart'),
+  }, 
+  {
     title: 'Voucher',
     path: '/voucher',
     icon: icon('ic_cart'),

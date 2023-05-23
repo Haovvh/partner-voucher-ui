@@ -1,13 +1,12 @@
 import axios from "axios";
 import headerService from "./header.service";
 
-const register = ( userName, password, name,  
-    gender, birthDate, address , type) =>(
-
-    axios.post(`${process.env.REACT_APP_API_URL}/Partner/Register`,{
-        userName, password, name,  gender, birthDate, address , type
-    })
+const register = ( account) =>(
+    axios.post(`${process.env.REACT_APP_API_URL}/Partner/Register`,account)
 );
+    
+
+
 const registerCompany = (name, businessCode, address, userId) => (
     axios.post(`${process.env.REACT_APP_API_URL}/Partner/RegisterCompany/${userId}`,{
         name, businessCode, address

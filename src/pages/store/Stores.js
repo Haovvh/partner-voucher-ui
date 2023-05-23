@@ -4,12 +4,10 @@ import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
 // @mui
 import {
-  Card,
-  Box,
+  Card,  
   Table,
   Stack,
-  Paper,
-  Avatar,
+  Paper,  
   Button,  
   TableRow,  
   TableBody,
@@ -18,13 +16,13 @@ import {
   Typography,
   IconButton,
   TableContainer,
-  TablePagination,
-  InputLabel,
-  Select,
+  TablePagination, 
   TextField,
-  MenuItem,
-  Modal 
+  MenuItem,  
+    
 } from '@mui/material';
+import Grid from '@mui/material/Unstable_Grid2';
+
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -39,22 +37,27 @@ import display from '../../utils/alert';
 
 import getService from '../../services/getEnum.service'
    
-import partnerService from '../../services/partner.service';
+
+import storeService from '../../services/store.service';
 
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
-import searchPartner from '../../utils/searchPartner';
+
+
 
 // ----------------------------------------------------------------------
 
+
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
-  { id: 'role', label: 'Role', alignRight: false },
-  { id: 'isVerified', label: 'Verified', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
+  { id: 'description', label: 'Description', alignRight: false },
+  { id: 'address', label: 'Address', alignRight: false },
+  { id: 'openTime', label: 'OpenTime', alignRight: false },
+  { id: 'closeTime', label: 'CloseTime', alignRight: false },
+  { id: 'isEnable', label: 'Enable', alignRight: false },
+  { id: 'isApproved', label: 'Approved', alignRight: false },
   { id: '' },
 ];
 
@@ -83,9 +86,7 @@ function applySortFilter(array, comparator, query) {
     if (order !== 0) return order;
     return a[1] - b[1];
   });
-  if(query.toLowerCase().indexOf(searchPartner[0]) || query.toLowerCase().indexOf(searchPartner[1]) ||query.toLowerCase().indexOf(searchPartner[2])){
-    return filter(array, (_user) => _user.status.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-  }  
+    
   if (query) {
     return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   } 
@@ -94,6 +95,7 @@ function applySortFilter(array, comparator, query) {
 
 export default function Store() {  
 
+  const [stores, setStores] = useState([])
   const [openTime, setOpenTime] = useState({
     hours: 0,
     minute: 1
@@ -106,7 +108,7 @@ export default function Store() {
   const [closeTimeText, setCloseTimeText] = useState("")
   const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const isEnable = true;
+
   const [order, setOrder] = useState('asc');
   const [name, setName] = useState("");
 
@@ -138,9 +140,7 @@ export default function Store() {
   const handlechangeDescription = (event) => {
     setDescription(event.target.value) 
   }
-  const handleClickClose = () => {
-    setOpen(false)    
-  }
+  
   const handleClose = () => {
     setOpen(false)    
   }
@@ -178,11 +178,7 @@ export default function Store() {
     )
     setDistrictId(event.target.value)
   }
-  const handleClickSave = () =>{ 
-    alert("ok")
-   }
-
-
+ 
   const handleClickEdit = (id, name) => {
     alert(`edit ${id}  ${name}`)
   };
@@ -221,23 +217,31 @@ export default function Store() {
     
   }
   const handleClickSubmit = () => {
-    console.log(name, description, address, openTime, closeTime);
+    
+    
     if(name && description && provineId && districtId && wardId && address && openTimeText && closeTimeText) {
-      partnerService.StoreRegister(name,description,address,openTime,closeTime).then(
-        response => {
-          if(response.data && response.status === 200 && response.data.success) {
-            alert(display.SUCCESS_STORE)
+      if(openTime <= closeTime) {
+        storeService.StoreRegister(name,description,address,openTime,closeTime).then(
+          response => {
             console.log(response)
+            if(response.data && response.status === 200 && response.data.success) {
+              alert(display.SUCCESS_STORE)              
+            }
+            
+          }, error => {
+            console.log(error)
           }
-          
-        }
-      )
+        )
+      } else {
+        alert("OpenTime < CloseTime")
+      }
     } else {
       alert("Please Write All Input")
     }
     setOpen(false);    
   }
   const handleChangeOpenTime = (event) => {
+    
     
     const timeText = event.target.value.split(':')
     
@@ -251,7 +255,7 @@ export default function Store() {
   const handleChangeCloseTime = (event) => {
 
     const timeText = event.target.value.split(':')
-    alert(`${timeText[0]} ==> ${timeText[1]}`)
+    
     setCloseTimeText(event.target.value)
     setCloseTime(prevState => ({ ...prevState,
       hours:parseInt(timeText[0],10),
@@ -263,17 +267,30 @@ export default function Store() {
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredUsers = applySortFilter(stores, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
   useEffect(() =>{
     getService.getAddressProvines().then(
       response =>{
-        if(response.data && response.status === 200){
+        if(response.data && response.data.success && response.data.data){
           setProvines(response.data.data.provines);          
         }
       }
     )
+    storeService.StoreDetail().then(
+      response => {
+        if(response.data && response.data.success ){     
+          console.log(response.data.data.store)   
+          const array = [];
+          array.push(response.data.data.store);
+          setStores(array)          
+        }
+      }, error => {
+        console.log(error)
+      }
+    )
+    
   },[])
 
   return (
@@ -302,36 +319,35 @@ export default function Store() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={1}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                    const { id, name, description, address, openTime, closeTime,isApproved , isEnable } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                         <TableCell component="th" scope="row" padding="none">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar alt={name} src={avatarUrl} />
-                            <Typography variant="subtitle2" noWrap>
-                              {name}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
+                         
+                         <TableCell align="left">{name}</TableCell>
+                        <TableCell align="left">{description}</TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
-
-                        <TableCell align="left">{role}</TableCell>
-
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left"> {address.street} {address.ward.fullName}  {address.ward.district.fullName}</TableCell>
+                        <TableCell align="left">{openTime.hour }: {openTime.minute}</TableCell>
+                        <TableCell align="left">{closeTime.hour}: {closeTime.minute}</TableCell>
+                        
+                        <TableCell align="left">
+                          {isEnable ? <Label color="success">{sentenceCase('Yes')}</Label>: 
+                          <Label color="warning">{sentenceCase('No')}</Label>}
+                        </TableCell> 
 
                         <TableCell align="left">
-                          <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                        </TableCell>
+                          {isApproved ? <Label color="success">{sentenceCase('Yes')}</Label>: 
+                          <Label color="warning">{sentenceCase('No')}</Label>}
+                        </TableCell>                        
 
                         <TableCell align="right">                        
                           <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id, name)}>
@@ -381,7 +397,7 @@ export default function Store() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={1}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -393,34 +409,35 @@ export default function Store() {
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>New Store</DialogTitle>
         <DialogContent>
-          
-        <TextField 
-        name="name" 
-        label="Store Name" 
-        fullWidth
-        value={name} 
-        required
-        onChange={(event) => { handleChangeName(event) }}
-        />
-
-          
-        <TextField 
-        name="description" 
-        label="Description" 
-        value={description} 
-        fullWidth
-        required
-        onChange={(event) => { handlechangeDescription(event) }}
-        />
-        <TextField
-                  style={{ marginTop: 20 }}
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField 
+              name="name" 
+              label="Store Name" 
+              fullWidth
+              value={name} 
+              required
+              onChange={(event) => { handleChangeName(event) }}
+              />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField 
+              name="description" 
+              label="Description" 
+              value={description} 
+              fullWidth
+              required
+              onChange={(event) => { handlechangeDescription(event) }}
+              />
+          </Grid>
+          <Grid item xs={6}>
+          <TextField
                   label="Provine"
                   fullWidth
                   select
                   variant="outlined"
                   value={provineId}
-                  id="country"                  
-                  margin="dense"
+                  id="country"          
                   onChange= {handleChangeProvineId}
                 >
                   {provines  && provines.map((option) => (
@@ -430,15 +447,15 @@ export default function Store() {
           )
           )}
           </TextField>
+          </Grid>
+          <Grid item xs={6}>
           <TextField
-                  style={{ marginTop: 20 }}
                   label="District"                  
                   select
                   fullWidth
                   variant="outlined"
                   value={districtId}
-                  id="country"                  
-                  margin="dense"
+                  id="country" 
                   onChange= {handleChangeDistrictId}
                 >
                   {districts  && districts.map((option) => (
@@ -448,15 +465,15 @@ export default function Store() {
           )
           )}
             </TextField>
-        <TextField
-                  style={{ marginTop: 20 }}
+          </Grid>
+          <Grid item xs={4}>
+          <TextField
                   label="Ward"
                   fullWidth
                   select
                   variant="outlined"
                   value={wardId}
-                  id="country"                  
-                  margin="dense"
+                  id="country"      
                   onChange= {handleWardId}
                 >
                   {wards  && wards.map((option) => (
@@ -466,36 +483,40 @@ export default function Store() {
           )
           )}
             </TextField>  
-        
+          </Grid>
+          <Grid item xs={8}>
+            <TextField 
+            name="street" 
+            label="Street" 
+            fullWidth
+            value={address.street} 
+            required
+            onChange={(event) => { handleChangeStreet(event) }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+          <Label>Open Time</Label>
           <TextField 
-          name="street" 
-          label="Street" 
-          fullWidth
-          value={address.street} 
-          required
-          onChange={(event) => { handleChangeStreet(event) }}
-          />
-        
-        <TextField 
-        name="openTime" 
-        label="OpenTime" 
-        type="time"
-        fullWidth
-        value={openTimeText} 
-        required
-        onChange={(event) => { handleChangeOpenTime(event) }}
-        />
-        <TextField 
-        name="closeTime" 
-        label="CloseTime" 
-        type="time"
-        fullWidth
-        value={closeTimeText} 
-        required
-        onChange={(event) => { handleChangeCloseTime(event) }}
-        />
-        
-        
+            name="openTime" 
+            type="time"
+            fullWidth
+            value={openTimeText} 
+            required
+            onChange={(event) => { handleChangeOpenTime(event) }}
+            />
+          </Grid>
+          <Grid item xs={6}> 
+          <Label>Close Time</Label>
+          <TextField 
+            name="closeTime" 
+            type="time"
+            fullWidth
+            value={closeTimeText} 
+            required
+            onChange={(event) => { handleChangeCloseTime(event) }}
+            />
+          </Grid>
+        </Grid> 
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClickCancel}>Cancel</Button>

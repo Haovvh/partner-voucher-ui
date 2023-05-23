@@ -9,6 +9,8 @@ import Logout from './pages/Logout';
 import Login from './pages/Login';
 import RegisterPage from './pages/RegisterPage';
 import Page404 from './pages/Page404';
+import ProductCategory from './pages/productcategory/productcategory';
+import ProductItem from './pages/productitem/productitem';
 import ProductsPage from './pages/product/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import Game from './pages/games/Games';
@@ -23,7 +25,7 @@ import User from './pages/user/Users';
 // ----------------------------------------------------------------------
 
 export default function Router() {
-  const isUser = (Service.GetUser() && Service.GetUser().success && Service.GetUser().data && Service.GetUser().data.accountToken)
+  const isUser = (Service.GetUser() && Service.GetUser().success && Service.GetUser().data && Service.GetUser().data.token)
   const routes = useRoutes([
     {
       path: '',
@@ -34,6 +36,8 @@ export default function Router() {
         { path: 'game', element: (isUser)? <Game /> :<PageRole /> },
         { path: 'voucher', element: (isUser)? <Voucher /> :<PageRole />},
         { path: 'conpaign', element: (isUser)? <Conpaign /> :<PageRole/>},
+        { path: 'productcategory', element: (isUser)? <ProductCategory /> :<PageRole/>},
+        { path: 'productitem', element: (isUser)? <ProductItem /> :<PageRole/>},
         { path: 'products', element: (isUser)? <ProductsPage /> :<PageRole/>},
         { path: 'store', element: (isUser)? <Store /> :<PageRole/>},
         { path: 'user', element: (isUser)? <User /> :<PageRole/>},

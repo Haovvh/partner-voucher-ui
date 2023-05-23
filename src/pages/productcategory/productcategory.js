@@ -1,14 +1,13 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 // @mui
 import {
   Card,
   Table,
   Stack,
   Paper,
-  Avatar,
   Button,  
   TableRow,  
   TableBody,
@@ -18,27 +17,40 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  TextField,
 } from '@mui/material';
+
+import Grid from '@mui/material/Unstable_Grid2';
+
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 // components
 import Label from '../../components/label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
+
+   
+import productcategoryService from '../../services/productcategory.service';
+
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
+
 // mock
-import USERLIST from '../../_mock/user';
-import searchPartner from '../../utils/searchPartner';
-import gameService from '../../services/game.service';
+
+
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'description', label: 'Description', alignRight: false },
-  { id: 'instruction', label: 'Instruction', alignRight: false },
+  { id: 'description', label: 'Description', alignRight: false },  
   { id: 'isEnable', label: 'Enable', alignRight: false },
   { id: '' },
 ];
+
 
 // ----------------------------------------------------------------------
 
@@ -65,20 +77,22 @@ function applySortFilter(array, comparator, query) {
     if (order !== 0) return order;
     return a[1] - b[1];
   });
-  if(query.toLowerCase().indexOf(searchPartner[0]) || query.toLowerCase().indexOf(searchPartner[1]) ||query.toLowerCase().indexOf(searchPartner[2])){
-    return filter(array, (_user) => _user.status.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-  }  
   if (query) {
     return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   } 
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function User() {  
-
+export default function ProductCategory() {  
+  
+  const [success, setSuccess] = useState(false);
+  const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
 
   const [order, setOrder] = useState('asc');
+  const [name, setName] = useState("");
+
+  const [description, setDescription] = useState("");
 
   const [selected, setSelected] = useState([]);
 
@@ -86,17 +100,42 @@ export default function User() {
 
   const [filterName, setFilterName] = useState('');
 
-  
+  const [productCategorys, setProductCategorys] = useState([])
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const handleClickEdit = (id, name) => {
-    alert(`edit ${id}  ${name}`)
-  };
-  const handleClickDelete = (id) => {
-    alert(`delete ${id}`)
-  };
 
+
+  const handleChangeName = (event) => {
+    setName(event.target.value) 
+  }
+
+  const handlechangeDescription = (event) => {
+    setDescription(event.target.value) 
+  }
+
+  const handleClose = () => {
+    setOpen(false)    
+  }
+  const handleClickEdit = (id) => {
+    productcategoryService.GetProductCategoryById(id).then(
+      response => { 
+        if (response.data && response.data.success) {
+          const temp = response.data.data.productCategories
+          
+          setName(temp.name);
+          setDescription(temp.description)
+          setOpen(true)
+          
+        }
+        
+      }, error => {
+        console.log(error)
+      }
+    )
+    
+  }
+  
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -118,31 +157,56 @@ export default function User() {
     setFilterName(event.target.value);
     setSelected([]);
   };
+
   const handleClickNew = () => {
-    alert("New OK")
+    setOpen(true);
     
   }
+  const handleClickCancel = () => {
+    setOpen(false);
+    clearScreen();
+  }
+  const clearScreen = () =>{
+    
+    setName("");
+    setDescription("");
+  }
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+ 
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - productCategorys.length) : 0;
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredDatas = applySortFilter(productCategorys, getComparator(order, orderBy), filterName);
 
-  const isNotFound = !filteredUsers.length && !!filterName;
-  
+  const isNotFound = !filteredDatas.length && !!filterName;
+  useEffect(() =>{
+    productcategoryService.ProductCategoryAvalible().then(
+      response =>{
+        if(response.data  && response.data.success) {
+          console.log("productCategories =>",response.data.data.productCategories)
+
+          setProductCategorys(response.data.data.productCategories)
+          setSuccess(false)
+        }
+      }, error => {
+        console.log("Error productCategories ==>",error)
+      }
+    )
+    
+  },[success])
 
   return (
     <>
       <Helmet>
-        <title> User  </title>
+        <title> ProductCategory  </title>
       </Helmet>
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            User
+          ProductCategory
           </Typography>
           <Button onClick={handleClickNew} variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
+            New ProductCategory
           </Button>
         </Stack>
 
@@ -156,44 +220,34 @@ export default function User() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={productCategorys.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                  {filteredDatas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, name, description, isEnable } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                         <TableCell component="th" scope="row" padding="none">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar alt={name} src={avatarUrl} />
-                            <Typography variant="subtitle2" noWrap>
-                              {name}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
+                        
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{name}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
-
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left">{description}</TableCell>
 
                         <TableCell align="left">
-                          <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                        </TableCell>
+                          {isEnable ? <Label color="success">{sentenceCase('Yes')}</Label>: 
+                          <Label color="warning">{sentenceCase('No')}</Label>}
+                        </TableCell> 
+                        
 
                         <TableCell align="right">                        
                           <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id, name)}>
-                          <Iconify icon={'eva:edit-fill'}  sx={{ mr: 2 }} />                          
-                          </IconButton>
-                          <IconButton size="large" color="inherit" onClick={()=>handleClickDelete(id)}>
-                          <Iconify  icon={'eva:trash-2-outline'} color="red" sx={{ mr: 2 }} />                        
-                          </IconButton>
+                          <Iconify icon={'ep:view'}  sx={{ mr: 2 }} />                          
+                          </IconButton>                          
                         </TableCell>
                       </TableRow>
                     );
@@ -235,14 +289,47 @@ export default function User() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={productCategorys.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Card>
+
       </Container>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle> ProductCategory</DialogTitle>
+        <DialogContent>
+        <Grid container spacing={2}>
+          <Grid xs={12}>
+            <Label>Name</Label>
+          <TextField 
+            name="name" 
+            fullWidth
+            value={name} 
+            disabled
+            onChange={(event) => { handleChangeName(event) }}
+            />
+          </Grid>
+          <Grid xs={12}>
+            <Label>Description</Label>
+          <TextField 
+            name="description" 
+            value={description} 
+            fullWidth
+            disabled
+            onChange={(event) => { handlechangeDescription(event) }}
+            />
+          </Grid>
+        </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClickCancel}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+      
       
     </>
   );

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // @mui
-import { Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
+import { Stack, IconButton, InputAdornment, TextField, Checkbox, Link } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
@@ -26,16 +26,23 @@ export default function LoginForm() {
     setPassword(event.target.value)
   }
   const handleClick = () => {
-    service.login(userName, password).then(
-      response => {
-        if(response.data.success && response.data.data) {
-          localStorage.setItem("user", JSON.stringify(response.data));
-          window.location.assign('/');
+    if (userName && password) {
+      service.login(userName, password).then(
+        response => {
+          if(response.data.success && response.data.data) {
+            localStorage.setItem("user", JSON.stringify(response.data));
+            window.location.assign('/');
+          }
+          console.log(response.data);
+          
+        }, error =>{
+          alert("Wrong. Please Check Username and Password")
         }
-        console.log(response.data);
-        
-      }
-    )
+      )
+    } else {
+      alert("Please Input Username and Password")
+    }
+    
     
   };
 
@@ -69,14 +76,18 @@ export default function LoginForm() {
         />
       </Stack>
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-        <Checkbox name="remember" label="Remember me" /> 
+      <Stack  direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
+        <Checkbox hidden name="remember" label="Remember me" /> 
         
       </Stack>
 
       <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClick}>
         Login
       </LoadingButton>
+      <Stack  direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
+        <Link href='/register'> Register
+        </Link>
+      </Stack>
     </>
   );
 }

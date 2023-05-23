@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 // @mui
-import {   Stack, TextField, Select } from '@mui/material';
+import {   Stack, TextField, Link, Paper,styled, Grid  } from '@mui/material';
 
 
 import {Form, Button, Modal} from 'react-bootstrap'
@@ -12,7 +12,15 @@ import { LoadingButton } from '@mui/lab';
 import partner from '../../../services/partner.service'
 import getService from '../../../services/getEnum.service'
 
+
 // ----------------------------------------------------------------------
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+}));
 
 export default function RegisterForm() {
   const [show, setShow] = useState(false);
@@ -33,10 +41,13 @@ export default function RegisterForm() {
     month:1,
     day:1
   });
+   const [company, setCompany] = useState("")
+   
   
  
+  
   const [partnerTypes, setPartnerTypes] = useState([]);
-  const [type, setType] = useState("");
+  const [partnerType, setPartnerType] = useState("");
   const [userId, setUserId]  = useState("");
 
   const [provines, setProvines] = useState([]);
@@ -57,6 +68,7 @@ export default function RegisterForm() {
 
   const handleChangeUserName = (event) => {        
     setUserName(event.target.value)
+    
   }
   const handleChangeName = (event) => {        
     setName(event.target.value)
@@ -87,8 +99,9 @@ export default function RegisterForm() {
     setAddress(prevState => ({ ...prevState,
       street:event.target.value}))
   }
-  const handleChangeType = (event) => {        
-    setType(event.target.value)
+  const handleChangeType = (event) => {    
+    console.log(event.target.value)    
+    setPartnerType(event.target.value)
   }
   const handleChangePassword = (event) => {        
     setPassword(event.target.value)
@@ -132,6 +145,7 @@ export default function RegisterForm() {
 
         if(response.status === 200 && response.data.data ){
           setShow(false);
+          alert("Success")
           window.location.assign('/login');
         }
         else {
@@ -146,12 +160,29 @@ export default function RegisterForm() {
   }
 
   const handleClickRegister = () => {
-    console.log(userName, password, name,  gender, birthDate, address , type)
+   
+    const account = {
+      account: {
+        userName,
+        password,
+        name,
+        gender,
+        birthDate,
+        address
+      },
+      partnerType,
+      company
+      }
     
     if(password !== confirmPassword){
       alert("Password and ConfirmPassword are not the same");
-    } else if(userName && password && name && gender && birthDate &&  type && provineId && districtId && wardId) {
-        partner.register( userName, password, name,  gender, birthDate, address , type).then(
+    } else if(userName && password && name && gender && birthDate &&  partnerType && provineId && districtId && wardId) {
+      
+      
+      
+      console.log("body===>",account)
+      partner.register( account
+        ).then(
           response=>{
             console.log(response)
             
@@ -164,8 +195,8 @@ export default function RegisterForm() {
               
             }
             
-          }, err =>{
-            console.log(err)
+          }, error =>{
+            console.log(error)
           }
         )
     } else{
@@ -180,7 +211,7 @@ export default function RegisterForm() {
       response =>{
         if(response.data && response.status === 200) {
           const arrayGender  = response.data.data.genderValue;        
-                   
+             
           setGenders(arrayGender)
         }
         
@@ -191,7 +222,7 @@ export default function RegisterForm() {
     getService.getValuesPartnerType().then(
       response =>{
         if(response.status === 200 && response.data.data) {
-          
+          console.log(response.data.data.partnerTypValue)
           setPartnerTypes(response.data.data.partnerTypValue);
         }
         
@@ -211,8 +242,10 @@ export default function RegisterForm() {
 
   return (
     <>
-      <Stack spacing={3}>
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
         <TextField 
+        fullWidth
         name="userName" 
         label="User Name" 
         value={userName} 
@@ -220,96 +253,34 @@ export default function RegisterForm() {
         required
         onChange={(event) => { handleChangeUserName(event) }}
         />
+      </Grid>
+ 
+      <Grid item xs={7}>
         <TextField 
         name="name" 
+        fullWidth
         label="Full Name" 
         value={name} 
         required
         onChange={(event) => { handleChangeName(event) }}
-        />
-        <TextField 
-        
+        />      
+      </Grid>
+      <Grid item xs={5}>
+      <TextField 
+        fullWidth
         label="" 
-        type="date"
-        
+        type="date"        
         required
         onChange={(event) => { handleChangeBirthDate(event) }}
-        />   
-        <TextField
-                  style={{ marginTop: 20 }}
-                  label="Provine"
-                  fullWidth
-                  select
-                  variant="outlined"
-                  value={provineId}
-                  id="country"                  
-                  margin="dense"
-                  onChange= {handleChangeProvineId}
-                >
-                  {provines  && provines.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-          </TextField>       
-
-            <TextField
-                  style={{ marginTop: 20 }}
-                  label="District"
-                  fullWidth
-                  select
-                  variant="outlined"
-                  value={districtId}
-                  id="country"                  
-                  margin="dense"
-                  onChange= {handleChangeDistrictId}
-                >
-                  {districts  && districts.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-            </TextField>  
-                  
-                  
-            <TextField
-                  style={{ marginTop: 20 }}
-                  label="Ward"
-                  fullWidth
-                  select
-                  variant="outlined"
-                  value={wardId}
-                  id="country"                  
-                  margin="dense"
-                  onChange= {handleWardId}
-                >
-                  {wards  && wards.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-            </TextField>                    
-         
-        <TextField 
-        name="street" 
-        label="Street" 
-        value={address.street} 
-        required
-        onChange={(event) => { handleChangeStreet(event) }}
-        />
-        
-        <TextField
-                  style={{ marginTop: 20 }}
+        />  
+      </Grid>
+      <Grid item xs={4}>
+      <TextField
                   label="Gender"
                   fullWidth
                   select
-                  variant="outlined"
                   value={gender}
-                  id="country"                  
-                  margin="dense"
+                  id="country"        
                   onChange= {handleChangeGender}
                 >
                   {genders  && Array.isArray(genders) && genders.map((option) => (
@@ -319,34 +290,75 @@ export default function RegisterForm() {
           )
           )}
                   </TextField>       
-
-        <TextField
-          name="password"
-          label="Password"
-          required
-          value={password}
-          type="password"
-          onChange={(event) => { handleChangePassword(event) }}
-          
+    </Grid>
+      <Grid item xs={8}>
+      <TextField
+                  label="Provine"
+                  fullWidth
+                  select
+                  value={provineId}
+                  id="country"       
+                  onChange= {handleChangeProvineId}
+                >
+                  {provines  && provines.map((option) => (
+             <MenuItem key={option.id} value={option.id}>
+              {option.name}
+            </MenuItem>
+          )
+          )}
+          </TextField>      
+    </Grid>
+    <Grid item xs={6}>
+      <TextField
+                  label="District"
+                  fullWidth
+                  select
+                  value={districtId}
+                  id="country"         
+                  onChange= {handleChangeDistrictId}
+                >
+                  {districts  && districts.map((option) => (
+             <MenuItem key={option.id} value={option.id}>
+              {option.name}
+            </MenuItem>
+          )
+          )}
+            </TextField>  
+    </Grid>
+    <Grid item xs={6}>
+      <TextField
+                  label="Ward"
+                  fullWidth
+                  select
+                  value={wardId}
+                  id="country"       
+                  onChange= {handleWardId}
+                >
+                  {wards  && wards.map((option) => (
+             <MenuItem key={option.id} value={option.id}>
+              {option.name}
+            </MenuItem>
+          )
+          )}
+            </TextField>
+    </Grid>
+    <Grid item xs={8}>
+        <TextField 
+        fullWidth
+        name="street" 
+        label="Street" 
+        value={address.street} 
+        required
+        onChange={(event) => { handleChangeStreet(event) }}
         />
-        <TextField
-          name="ConfirmPassword"
-          label="ConfirmPassword"
-          required
-          value={confirmPassword}
-          type='password'
-          onChange={(event) => { handleConfirmPassword(event) }}
-          
-        />
-        <TextField
-                  style={{ marginTop: 20 }}
+    </Grid>
+    <Grid item xs={4}>
+    <TextField
                   label="Partner Type"
                   fullWidth
                   select
-                  variant="outlined"
-                  value={type}
-                  id="country"                  
-                  margin="dense"
+                  value={partnerType}
+                  id="country"    
                   onChange= {handleChangeType}
                 >
                   {partnerTypes && Array.isArray(partnerTypes)  && partnerTypes.map((option) => (
@@ -356,14 +368,44 @@ export default function RegisterForm() {
           )
           )}
                   </TextField>
-        
-      </Stack>
-
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-      <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClickRegister}>
+    </Grid>
+    
+    <Grid item xs={12}>
+      <TextField
+        fullWidth
+          name="password"
+          label="Password"
+          required
+          value={password}
+          type="password"
+          onChange={(event) => { handleChangePassword(event) }}          
+        />        
+    </Grid>
+    <Grid item xs={12}>
+      <TextField
+      fullWidth
+          name="ConfirmPassword"
+          label="ConfirmPassword"
+          required
+          value={confirmPassword}
+          type='password'
+          onChange={(event) => { handleConfirmPassword(event) }}
+          
+        />
+    </Grid>
+    <Grid item xs={12}>
+    <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClickRegister}>
         Register
       </LoadingButton>
-      </Stack>
+    </Grid>
+    <Grid item xs={12}>
+      <Link href='/login' > Login
+      </Link>
+    
+    </Grid>
+    
+  </Grid>      
+
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Please Check Email</Modal.Title>
