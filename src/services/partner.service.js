@@ -50,24 +50,8 @@ const VerifyResetPassword = (userName, otp) => (
     headers: headerService.accessToken() 
 })
 );
-const StoreRegister = (name, description, address, openTime, closeTime, isEnable = true) => (
-    
-    axios.post(`${process.env.REACT_APP_API_URL}/Partner/Store/Register`,{
-        name, description, address, openTime, closeTime, isEnable
-   }, { 
-    headers: headerService.accessToken() 
-})
-);
-const StoreEnable = (storeId) => (
-    axios.put(`${process.env.REACT_APP_API_URL}/Partner/Store/Enable/${storeId}`, { 
-        headers: headerService.accessToken() 
-    })
-);
-const StoreDisable = (storeId) => (
-    axios.put(`${process.env.REACT_APP_API_URL}/Partner/Store/Disable/${storeId}`,{ 
-        headers: headerService.accessToken() 
-    })
-);
+
+
 
 const refreshToken = (token) => (
      axios.post(`${process.env.REACT_APP_API_URL}/Partner/RefreshToken`,{
@@ -77,12 +61,12 @@ const refreshToken = (token) => (
     })
 );
 
-const Logout = () => (
+const Logout = () => {
     localStorage.removeItem("user")
-  );
+    localStorage.removeItem("token")
+}
 
-
-export default {
+  const partnerService = {
     register,
     registerCompany,
     verifyRegister,
@@ -91,8 +75,8 @@ export default {
     Logout,
     changePassword, 
     ResetPassword,    
-    VerifyResetPassword,
-    StoreEnable,
-    StoreRegister,
-    StoreDisable
-}
+    VerifyResetPassword
+  }
+
+
+export default partnerService

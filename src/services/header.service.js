@@ -1,37 +1,38 @@
 const accessToken = () => {
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (user && user.success && user.data && user.data.token && user.data.token.accessToken)  {
+  const user = JSON.parse(localStorage.getItem('token'));
+  
+  
+  if (user &&  user.accessToken)  {
     return {
-      Authorization: `Bearer ${user.data.token.accessToken}`      
+      Authorization: `Bearer ${user.accessToken}`      
     } 
   }
   return {
 
   }
 }
+
 const refreshToken = () => {
   
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (user && user.data && user.data.token && user.data.token.refreshToken)  {
-    return {
-      Authorization: `Bearer ${user.data.token.refreshToken}`      
-    } 
+  const user = JSON.parse(localStorage.getItem('token'));
+  if (user && user.refreshToken)  {
+    return user.refreshToken
   }
-  return {
-
-  }  
+  return ""
 }
+
 const userName = () => {
-  const account = JSON.parse(localStorage.getItem('user'))
-  if(account && account.data && account.data.account.userName){
-    return account.data.account.userName
+  const user = JSON.parse(localStorage.getItem('user'))
+  if(user && user.userName){
+    return user.userName
   }  
   return ""  
 }
+
 const getUserId = () => {
   const user = JSON.parse(localStorage.getItem('user'));
-  if(user && user.data && user.data.account) {
-    return user.data.account.id;
+  if(user  && user.id) {
+    return user.id;
   }
   return ""  
 }
@@ -39,10 +40,12 @@ const getUserId = () => {
 const GetUser = () => (
   JSON.parse(localStorage.getItem('user'))
 )
-export default {
+
+const headerService = {
   accessToken,
   refreshToken,
   userName,
   GetUser, 
   getUserId
 }
+export default headerService;

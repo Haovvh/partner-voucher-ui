@@ -38,6 +38,8 @@ import Scrollbar from '../../components/scrollbar';
    
 import productcategoryService from '../../services/productcategory.service';
 import productitemService from '../../services/productitem.service';
+import headerService from '../../services/header.service';
+import partnerService from '../../services/partner.service';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
@@ -172,7 +174,7 @@ export default function ProductItem() {
           }
           
         }, error => {
-          console.log(error)
+          alert("Dữ liệu đã tồn tại.")
         }
       )
     }
@@ -274,7 +276,21 @@ export default function ProductItem() {
           setProductItems(response.data.data.productItems)
         }
       }, error => {
-        console.log(error)
+        if(error.response && error.response.status === 401) {
+          console.log(error.response)
+          const token = headerService.refreshToken();
+          partnerService.refreshToken(token).then(
+            response => {
+              console.log(response.data)
+              if(response.data && response.data.success === true) {                
+                localStorage.setItem("token", JSON.stringify(response.data.data));
+                setSuccess(!success)
+              }
+            }, error => {
+              console.log(error)
+            }
+          )
+        }        
       }
     )
     

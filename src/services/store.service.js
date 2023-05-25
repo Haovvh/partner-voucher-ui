@@ -14,7 +14,15 @@ const StoreDetail = () => (
         name, description, address, openTime, closeTime, isEnable, bannerUrl
    }, { 
     headers: headerService.accessToken() 
-})
+    })
+);
+const PutStore = (name, description, address, openTime, closeTime, isEnable = true, bannerUrl = "/Image/StoreBanner") => (
+    
+    axios.put(`${process.env.REACT_APP_API_URL}/Partner/Store/Update`,{
+        name, description, address, openTime, closeTime, isEnable, bannerUrl
+   }, { 
+    headers: headerService.accessToken() 
+    })
 );
 const StoreEnable = () => (
     axios.put(`${process.env.REACT_APP_API_URL}/Partner/Store/Enable`, { 
@@ -32,5 +40,6 @@ const StoreDisable = () => (
     StoreDetail,
     StoreRegister,
     StoreEnable,
-    StoreDisable
+    StoreDisable,
+    PutStore
   }

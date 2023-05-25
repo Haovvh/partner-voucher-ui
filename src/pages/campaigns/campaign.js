@@ -1,10 +1,11 @@
 import { Helmet } from 'react-helmet-async';
-import { filter } from 'lodash';
+import { camelCase, filter, set } from 'lodash';
 import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 // @mui
 import {
   Card,
+  Box,
   Table,
   Stack,
   Paper,
@@ -18,27 +19,43 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  InputLabel,
+  Select,
+  TextField,
+  MenuItem,
+  Modal 
 } from '@mui/material';
-// components
-import Label from '../../components/label';
+
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
+import CampaignDetail from './detail.campaign';
+
+import Label from '../../components/label';
+
+import CampaignService from '../../services/campaign.service';
+
+
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
-import USERLIST from '../../_mock/user';
-import searchPartner from '../../utils/searchPartner';
+
+import headerService from '../../services/header.service';
+import partnerService from '../../services/partner.service';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
-  { id: 'role', label: 'Role', alignRight: false },
-  { id: 'isVerified', label: 'Verified', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
+  { id: 'description', label: 'Description', alignRight: false },  
+  { id: 'gameId', label: 'Game', alignRight: false },  
+  { id: 'isEnable', label: 'Enable', alignRight: false }, 
+  { id: 'status', label: 'Status', alignRight: false },  
+  { id: 'startDate', label: 'StartDate', alignRight: false },  
+  { id: 'endDate', label: 'EndDate', alignRight: false },  
+  
   { id: '' },
 ];
+
 
 // ----------------------------------------------------------------------
 
@@ -65,20 +82,21 @@ function applySortFilter(array, comparator, query) {
     if (order !== 0) return order;
     return a[1] - b[1];
   });
-  if(query.toLowerCase().indexOf(searchPartner[0]) || query.toLowerCase().indexOf(searchPartner[1]) ||query.toLowerCase().indexOf(searchPartner[2])){
-    return filter(array, (_user) => _user.status.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-  }  
   if (query) {
     return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   } 
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function Conpaign() {  
+export default function Campaign() {  
+  
+  const [success, setSuccess] = useState(false);
+
+  const [isDetail, setIsDetail] = useState(false);
 
   const [page, setPage] = useState(0);
 
-  const [order, setOrder] = useState('asc');
+  const [order, setOrder] = useState('asc'); 
 
   const [selected, setSelected] = useState([]);
 
@@ -86,15 +104,44 @@ export default function Conpaign() {
 
   const [filterName, setFilterName] = useState('');
 
-  
+  const [campaigns, setCampaigns] = useState([])
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const handleClickEdit = (id, name) => {
-    alert(`edit ${id}  ${name}`)
+  const [voucherId, setVoucherId] = useState("");
+
+   
+  const handleClickEdit = (id) => {
+    alert(id)
+    CampaignService.GetCampaignById(id).then(
+      response => { 
+        if (response.data && response.data.success) {
+          const temp = response.data.data
+          console.log(temp)         
+          
+        }
+        
+      }, error => {
+        console.log(error)
+      }
+    )
+    
   };
   const handleClickDelete = (id) => {
-    alert(`delete ${id}`)
+    if(window.confirm(`Are you want delete ${id}`)) {
+      CampaignService.DeleteCampaignById(id).then(
+        response => { 
+          if (response.data && response.data.success) {
+            alert("Delete Success")
+            setSuccess(!success);
+          }
+          
+        }, error => {
+          console.log(error)
+        }
+      )
+    }
+    
   };
 
   const handleRequestSort = (event, property) => {
@@ -118,31 +165,61 @@ export default function Conpaign() {
     setFilterName(event.target.value);
     setSelected([]);
   };
+
   const handleClickNew = () => {
-    alert("New OK")
-    
+     setIsDetail(true);
   }
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - campaigns.length) : 0;
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const filteredDatas = applySortFilter(campaigns, getComparator(order, orderBy), filterName);
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const isNotFound = !filteredDatas.length && !!filterName;
+  useEffect(() =>{
+    CampaignService.CampaignAllByStore().then(
+      response =>{
+        if(response.data  && response.data.success) {
+          console.log("campaignseriesList =>",response.data.data.listCampaign)
 
-  const isNotFound = !filteredUsers.length && !!filterName;
-  
+          setCampaigns(response.data.data.listCampaign)
+          setSuccess(false)
+        }
+      }, error => {
+        if(error.response && error.response.status === 401) {
+          console.log(error.response)
+          const token = headerService.refreshToken();
+          partnerService.refreshToken(token).then(
+            response => {
+              console.log(response.data)
+              if(response.data && response.data.success === true) {                
+                localStorage.setItem("token", JSON.stringify(response.data.data));
+                setSuccess(!success)
+              }
+            }, error => {
+              console.log(error)
+            }
+          )
+        }
+        
+      }
+    )
+    
+  },[success])
 
   return (
     <>
       <Helmet>
-        <title> Conpaign  </title>
+        <title> Campaigns  </title>
       </Helmet>
 
-      <Container>
+      {isDetail ? <CampaignDetail load={isDetail}/> : 
+
+      (<Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-          Conpaign
+          Campaigns
           </Typography>
           <Button onClick={handleClickNew} variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New Conpaign
+            New Campaign
           </Button>
         </Stack>
 
@@ -156,39 +233,39 @@ export default function Conpaign() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={campaigns.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                  {filteredDatas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, name, description, startDate, endDate, gameId, gameName, status, storeId, storeName, isEnable } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                         <TableCell component="th" scope="row" padding="none">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar alt={name} src={avatarUrl} />
-                            <Typography variant="subtitle2" noWrap>
-                              {name}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
+                        
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{name}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
+                        <TableCell align="left">{description}</TableCell>    
 
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left">{gameName}</TableCell>   
 
                         <TableCell align="left">
-                          <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
+                          {isEnable ? <Label color="success">{sentenceCase('Yes')}</Label>: 
+                          <Label color="warning">{sentenceCase('No')}</Label>}
                         </TableCell>
 
+                        <TableCell align="left">{status}</TableCell>        
+
+                        <TableCell align="left">{startDate.day}-{startDate.month}-{startDate.year}</TableCell>    
+
+                        <TableCell align="left">{endDate.day}-{endDate.month}-{endDate.year}</TableCell>       
+
                         <TableCell align="right">                        
-                          <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id, name)}>
+                          <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id)}>
                           <Iconify icon={'eva:edit-fill'}  sx={{ mr: 2 }} />                          
                           </IconButton>
                           <IconButton size="large" color="inherit" onClick={()=>handleClickDelete(id)}>
@@ -235,14 +312,16 @@ export default function Conpaign() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={campaigns.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Card>
-      </Container>
+
+      </Container>  
+      )}  
       
     </>
   );

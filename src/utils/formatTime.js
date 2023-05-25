@@ -25,3 +25,16 @@ export function fToNow(date) {
       })
     : '';
 }
+
+export function convertStringToTime (temp)  {
+  let hour = temp.hour;
+  if (hour.toString().length === 1) {
+    hour = `0${temp.hour}`
+  }
+  let minute = temp.minute;
+  if (minute.toString().length === 1) {
+   minute = `0${temp.minute}`
+  }
+  return `${hour}:${minute}`
+}
+

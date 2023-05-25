@@ -30,7 +30,9 @@ export default function LoginForm() {
       service.login(userName, password).then(
         response => {
           if(response.data.success && response.data.data) {
-            localStorage.setItem("user", JSON.stringify(response.data));
+            
+            localStorage.setItem("user", JSON.stringify(response.data.data.account));
+            localStorage.setItem("token", JSON.stringify(response.data.data.token)) 
             window.location.assign('/');
           }
           console.log(response.data);

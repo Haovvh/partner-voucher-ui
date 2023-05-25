@@ -44,7 +44,9 @@ import storeService from '../../services/store.service';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 import USERLIST from '../../_mock/user';
-
+import { convertStringToTime } from '../../utils/formatTime';
+import headerService from '../../services/header.service';
+import partnerService from '../../services/partner.service';
 
 
 // ----------------------------------------------------------------------
@@ -97,13 +99,15 @@ export default function Store() {
 
   const [stores, setStores] = useState([])
   const [openTime, setOpenTime] = useState({
-    hours: 0,
+    hour: 0,
     minute: 1
   })
   const [closeTime, setCloseTime] = useState({
-    hours: 0,
+    hour: 0,
     minute: 1
   })
+
+  const [success, setSuccess] = useState(false);
   const [openTimeText, setOpenTimeText] = useState("")
   const [closeTimeText, setCloseTimeText] = useState("")
   const [open, setOpen] = useState(false);
@@ -129,7 +133,7 @@ export default function Store() {
   const [districts, setDistricts] = useState([]);
   const [districtId, setDistrictId] = useState("");
   const [wards, setWards] = useState([]);
-  const [wardId, setWardId] = useState("");
+  const [storeId, setStoreId] = useState("");
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -137,6 +141,7 @@ export default function Store() {
     setName(event.target.value) 
   }
 
+  
   const handlechangeDescription = (event) => {
     setDescription(event.target.value) 
   }
@@ -144,9 +149,7 @@ export default function Store() {
   const handleClose = () => {
     setOpen(false)    
   }
-  const handleWardId = (event) => { 
-         
-    setWardId(event.target.value)
+  const handleWardId = (event) => {         
     setAddress(prevState => ({ ...prevState,
       wardId:event.target.value}))
   }
@@ -179,8 +182,47 @@ export default function Store() {
     setDistrictId(event.target.value)
   }
  
-  const handleClickEdit = (id, name) => {
-    alert(`edit ${id}  ${name}`)
+  const handleClickEdit = (id ) => {
+    storeService.StoreDetail().then(
+      response =>{
+        if(response.data && response.data.success === true) {
+          const temp = response.data.data.store
+          console.log(temp)
+          setOpen(true)
+          setStoreId(temp.id)
+          setName(temp.name)
+
+          const tempOpenTime = convertStringToTime(temp.openTime);
+          const tempCloseTime = convertStringToTime(temp.closeTime)
+          setOpenTimeText(tempOpenTime)
+          setCloseTimeText(tempCloseTime)
+          setOpenTime(temp.openTime)
+          setCloseTime(temp.closeTime)
+          setDescription(temp.description)
+          setProvineId(temp.address.ward.province.id )
+          getService.getAddressDistrictProvineId(temp.address.ward.province.id).then(
+            response =>{
+              if(response.status === 200 && response.data.data) {
+                setDistricts(response.data.data.districts);
+                setDistrictId(temp.address.ward.district.id)
+                getService.getAddressWardDistrictId(temp.address.ward.district.id).then(
+                  response =>{
+                    if(response.status === 200 && response.data.data) {
+                      
+                      setWards(response.data.data.wards);
+                      setAddress({
+                        wardId:temp.address.ward.id,
+                        street: temp.address.street
+                      })
+                    }        
+                  }
+                )
+              } 
+            }
+          )
+        }
+      }
+    )    
   };
   const handleClickDelete = (id) => {
     alert(`delete ${id}`)
@@ -216,38 +258,54 @@ export default function Store() {
     setOpen(false);
     
   }
-  const handleClickSubmit = () => {
-    
-    
-    if(name && description && provineId && districtId && wardId && address && openTimeText && closeTimeText) {
+  const handleClickSubmit = () => {    
+    console.log(name,description,address,openTime,closeTime)
+    if(name && description && provineId && districtId  && address && openTimeText && closeTimeText) {
       if(openTime <= closeTime) {
-        storeService.StoreRegister(name,description,address,openTime,closeTime).then(
-          response => {
-            console.log(response)
-            if(response.data && response.status === 200 && response.data.success) {
-              alert(display.SUCCESS_STORE)              
+        if(storeId === "") {
+          storeService.StoreRegister(name,description,address,openTime,closeTime).then(
+            response => {
+              console.log(response)
+              if(response.data &&  response.data.success) {
+                alert(display.SUCCESS_STORE)   
+                setOpen(false);  
+                setSuccess(true)           
+              }
+              
+            }, error => {
+              console.log(error)
             }
-            
-          }, error => {
-            console.log(error)
-          }
-        )
+          )
+        } else {
+          storeService.PutStore(name,description,address,openTime,closeTime).then(
+            response => {
+              console.log(response)
+              if(response.data &&  response.data.success) {
+                alert(display.UPDATE_STORE)   
+                setOpen(false);  
+                setSuccess(true)           
+              }
+              
+            }, error => {
+              console.log(error)
+            }
+          )
+        }
+        
       } else {
         alert("OpenTime < CloseTime")
       }
     } else {
       alert("Please Write All Input")
-    }
-    setOpen(false);    
+    }      
   }
-  const handleChangeOpenTime = (event) => {
-    
+  const handleChangeOpenTime = (event) => {    
     
     const timeText = event.target.value.split(':')
     
     setOpenTimeText(event.target.value)
     setOpenTime(prevState => ({ ...prevState,
-      hours: parseInt(timeText[0], 10),
+      hour: parseInt(timeText[0], 10),
       minute: parseInt(timeText[1], 10)
     }))
     
@@ -258,7 +316,7 @@ export default function Store() {
     
     setCloseTimeText(event.target.value)
     setCloseTime(prevState => ({ ...prevState,
-      hours:parseInt(timeText[0],10),
+      hour:parseInt(timeText[0],10),
       minute:parseInt(timeText[1], 10)
     }))
   }
@@ -271,6 +329,7 @@ export default function Store() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
   useEffect(() =>{
+    
     getService.getAddressProvines().then(
       response =>{
         if(response.data && response.data.success && response.data.data){
@@ -280,18 +339,34 @@ export default function Store() {
     )
     storeService.StoreDetail().then(
       response => {
+        console.log(response.data)
         if(response.data && response.data.success ){     
-          console.log(response.data.data.store)   
           const array = [];
           array.push(response.data.data.store);
-          setStores(array)          
+          setStores(array)   
+            
         }
       }, error => {
-        console.log(error)
+        if(error.response && error.response.status === 401) {
+          console.log(error.response)
+          const token = headerService.refreshToken();
+          partnerService.refreshToken(token).then(
+            response => {
+              console.log(response.data)
+              if(response.data && response.data.success === true) {                
+                localStorage.setItem("token", JSON.stringify(response.data.data));
+                setSuccess(!success)
+              }
+            }, error => {
+              console.log(error)
+            }
+          )
+        }
+        
       }
     )
     
-  },[])
+  },[success])
 
   return (
     <>
@@ -304,9 +379,11 @@ export default function Store() {
           <Typography variant="h4" gutterBottom>
             Store
           </Typography>
+          {(success === false) && 
           <Button onClick={handleClickNew} variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
             New Store
           </Button>
+          }
         </Stack>
 
         <Card>
@@ -350,7 +427,7 @@ export default function Store() {
                         </TableCell>                        
 
                         <TableCell align="right">                        
-                          <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id, name)}>
+                          <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id)}>
                           <Iconify icon={'eva:edit-fill'}  sx={{ mr: 2 }} />                          
                           </IconButton>
                           <IconButton size="large" color="inherit" onClick={()=>handleClickDelete(id)}>
@@ -472,7 +549,7 @@ export default function Store() {
                   fullWidth
                   select
                   variant="outlined"
-                  value={wardId}
+                  value={address.wardId}
                   id="country"      
                   onChange= {handleWardId}
                 >

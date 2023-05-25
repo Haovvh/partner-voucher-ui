@@ -11,16 +11,11 @@ import { LoadingButton } from '@mui/lab';
 // components
 import partner from '../../../services/partner.service'
 import getService from '../../../services/getEnum.service'
+import Label from '../../../components/label';
 
 
 // ----------------------------------------------------------------------
-const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-  ...theme.typography.body2,
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  color: theme.palette.text.secondary,
-}));
+
 
 export default function RegisterForm() {
   const [show, setShow] = useState(false);
@@ -36,7 +31,7 @@ export default function RegisterForm() {
   const [name, setName] = useState("");
   const [genders, setGenders] = useState([]);
   const [gender, setGender] = useState("");
-  const [birthDate, setBirthDate] = useState({
+  const [dateOfBirth, setDateBirthDate] = useState({
     year: 2000,
     month:1,
     day:1
@@ -77,7 +72,7 @@ export default function RegisterForm() {
   const handleChangeBirthDate = (event) => {    
     const date = event.target.value.toString().split('-');
     
-    setBirthDate({
+    setDateBirthDate({
       year: parseInt(date[0], 10),
       month: parseInt(date[1], 10),
       day: date[2]
@@ -167,7 +162,7 @@ export default function RegisterForm() {
         password,
         name,
         gender,
-        birthDate,
+        dateOfBirth,
         address
       },
       partnerType,
@@ -176,11 +171,8 @@ export default function RegisterForm() {
     
     if(password !== confirmPassword){
       alert("Password and ConfirmPassword are not the same");
-    } else if(userName && password && name && gender && birthDate &&  partnerType && provineId && districtId && wardId) {
+    } else if(userName && password && name && gender && dateOfBirth &&  partnerType && provineId && districtId && wardId) {
       
-      
-      
-      console.log("body===>",account)
       partner.register( account
         ).then(
           response=>{
@@ -188,8 +180,7 @@ export default function RegisterForm() {
             
             if(response.status === 200 && response.data.data){
               
-              setShow(true);
-              console.log("id", response.data.data.userAccount.id)
+              setShow(true);              
               
               setUserId(response.data.data.userAccount.id);
               
@@ -244,10 +235,11 @@ export default function RegisterForm() {
     <>
     <Grid container spacing={2}>
       <Grid item xs={12}>
+      <Label>Email</Label>
         <TextField 
         fullWidth
         name="userName" 
-        label="User Name" 
+        
         value={userName} 
         type="text"
         required
@@ -256,27 +248,27 @@ export default function RegisterForm() {
       </Grid>
  
       <Grid item xs={7}>
+      <Label>FullName</Label>
         <TextField 
         name="name" 
         fullWidth
-        label="Full Name" 
         value={name} 
         required
         onChange={(event) => { handleChangeName(event) }}
         />      
       </Grid>
       <Grid item xs={5}>
+      <Label>DateOfBirth</Label>
       <TextField 
         fullWidth
-        label="" 
         type="date"        
         required
         onChange={(event) => { handleChangeBirthDate(event) }}
         />  
       </Grid>
       <Grid item xs={4}>
+      <Label>Gender</Label>
       <TextField
-                  label="Gender"
                   fullWidth
                   select
                   value={gender}
@@ -292,8 +284,8 @@ export default function RegisterForm() {
                   </TextField>       
     </Grid>
       <Grid item xs={8}>
+      <Label>Provine</Label>
       <TextField
-                  label="Provine"
                   fullWidth
                   select
                   value={provineId}
@@ -309,8 +301,8 @@ export default function RegisterForm() {
           </TextField>      
     </Grid>
     <Grid item xs={6}>
+    <Label>District</Label>
       <TextField
-                  label="District"
                   fullWidth
                   select
                   value={districtId}
@@ -326,8 +318,8 @@ export default function RegisterForm() {
             </TextField>  
     </Grid>
     <Grid item xs={6}>
+    <Label>Ward</Label>
       <TextField
-                  label="Ward"
                   fullWidth
                   select
                   value={wardId}
@@ -343,18 +335,18 @@ export default function RegisterForm() {
             </TextField>
     </Grid>
     <Grid item xs={8}>
+    <Label>Street</Label>
         <TextField 
         fullWidth
         name="street" 
-        label="Street" 
         value={address.street} 
         required
         onChange={(event) => { handleChangeStreet(event) }}
         />
     </Grid>
     <Grid item xs={4}>
+    <Label>Partner Type</Label>
     <TextField
-                  label="Partner Type"
                   fullWidth
                   select
                   value={partnerType}

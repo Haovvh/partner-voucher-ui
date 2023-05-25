@@ -14,8 +14,8 @@ import ProductItem from './pages/productitem/productitem';
 import ProductsPage from './pages/product/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import Game from './pages/games/Games';
-import Voucher from './pages/vouchers/Vouchers';
-import Conpaign from './pages/conpaigns/conpaign';
+import Voucher from './pages/vouchers/Voucher';
+import Campaign from './pages/campaigns/campaign';
 import Service from './services/header.service';
 import PageRole from './pages/PageRole';
 import Store from './pages/store/Stores';
@@ -25,7 +25,7 @@ import User from './pages/user/Users';
 // ----------------------------------------------------------------------
 
 export default function Router() {
-  const isUser = (Service.GetUser() && Service.GetUser().success && Service.GetUser().data && Service.GetUser().data.token)
+  const isUser = (Service.GetUser() && Service.refreshToken() !== "")
   const routes = useRoutes([
     {
       path: '',
@@ -35,7 +35,7 @@ export default function Router() {
         { path: 'app', element: (isUser)? <DashboardAppPage /> :<PageRole />},
         { path: 'game', element: (isUser)? <Game /> :<PageRole /> },
         { path: 'voucher', element: (isUser)? <Voucher /> :<PageRole />},
-        { path: 'conpaign', element: (isUser)? <Conpaign /> :<PageRole/>},
+        { path: 'campaign', element: (isUser)? <Campaign /> :<PageRole/>},
         { path: 'productcategory', element: (isUser)? <ProductCategory /> :<PageRole/>},
         { path: 'productitem', element: (isUser)? <ProductItem /> :<PageRole/>},
         { path: 'products', element: (isUser)? <ProductsPage /> :<PageRole/>},

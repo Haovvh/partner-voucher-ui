@@ -5,9 +5,11 @@ import { useEffect, useState } from 'react';
 // @mui
 import {
   Card,
+  Box,
   Table,
   Stack,
   Paper,
+  Avatar,
   Button,  
   TableRow,  
   TableBody,
@@ -17,7 +19,11 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  InputLabel,
+  Select,
   TextField,
+  MenuItem,
+  Modal 
 } from '@mui/material';
 
 import Grid from '@mui/material/Unstable_Grid2';
@@ -32,28 +38,28 @@ import Label from '../../components/label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
 
-   
 
-import gameService from '../../services/game.service';
+
+import getService from '../../services/getEnum.service'
+import voucherService from '../../services/voucher.service';   
 import headerService from '../../services/header.service';
 import partnerService from '../../services/partner.service';
+
+
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 
 
+
 // ----------------------------------------------------------------------
-
-
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'description', label: 'Description', alignRight: false },
-  { id: 'instruction', label: 'Instruction', alignRight: false },
-  { id: 'imageUrl', label: 'Image', alignRight: false },
-  { id: 'isEnable', label: 'Enable', alignRight: false },
-  { id: '' }
+  { id: 'description', label: 'Description', alignRight: false },  
+  { id: '' },
 ];
+
 
 // ----------------------------------------------------------------------
 
@@ -80,20 +86,22 @@ function applySortFilter(array, comparator, query) {
     if (order !== 0) return order;
     return a[1] - b[1];
   });
-  
   if (query) {
     return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
   } 
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function Game() {  
-  const [instruction, setInstruction] = useState("")
-  const [success, setSuccess] = useState(false)
+export default function Voucher() {  
+  
+  const [success, setSuccess] = useState(false);
+
   const [open, setOpen] = useState(false);
+
   const [page, setPage] = useState(0);
 
   const [order, setOrder] = useState('asc');
+  
   const [name, setName] = useState("");
 
   const [description, setDescription] = useState("");
@@ -104,20 +112,14 @@ export default function Game() {
 
   const [filterName, setFilterName] = useState('');
 
-  const [games, setGames] = useState([])
+  const [vouchers, setVouchers] = useState([])
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [imageUrl, setImageUrl] = useState("/DummyImages/Games/lucky-wheel.jpg")
+
+  const [voucherId, setVoucherId] = useState("");
 
   const handleChangeName = (event) => {
     setName(event.target.value) 
-  }
-
-  const handlechangeInstruction = (event) => {
-    setInstruction(event.target.value) 
-  }
-  const handlechangeImageUrl = (event) => {
-    setImageUrl(event.target.value) 
   }
 
   const handlechangeDescription = (event) => {
@@ -126,25 +128,42 @@ export default function Game() {
   
   const handleClose = () => {
     setOpen(false)    
-    clearScreen();
   }
   const handleClickEdit = (id) => {
-    gameService.GetGameById(id).then(
-      response => {
-        if(response.data && response.data.success) {
-          const temp = response.data.data.game
+    
+    voucherService.GetVoucherById(id).then(
+      response => { 
+        if (response.data && response.data.success) {
+          const temp = response.data.data.voucherSeries
+          setVoucherId(temp.id);
           setName(temp.name);
           setDescription(temp.description)
-          setInstruction(temp.instruction)
-          setImageUrl(temp.imageUrl);
           setOpen(true)
+          
         }
+        
       }, error => {
         console.log(error)
       }
     )
+    
   };
-  
+  const handleClickDelete = (id) => {
+    if(window.confirm(`Are you want delete `)) {
+      voucherService.DeleteVoucherById(id).then(
+        response => { 
+          if (response.data && response.data.success) {
+            alert("Delete Success")
+            setSuccess(!success);
+          }
+          
+        }, error => {
+          alert("Dữ liệu đã tồn tại không thể xóa")
+        }
+      )
+    }
+    
+  };
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -168,30 +187,71 @@ export default function Game() {
     setSelected([]);
   };
 
+  const handleClickNew = () => {
+    setOpen(true);
+    
+  }
   const handleClickCancel = () => {
     setOpen(false);
     
   }
-  const clearScreen = () => {
-    setSuccess(true)
+  const clearScreen = () =>{
+    setVoucherId("");
     setName("");
     setDescription("");
-    setInstruction("");
   }
-  
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - games.length) : 0;
 
-  const filteredUsers = applySortFilter(games, getComparator(order, orderBy), filterName);
+  const handleClickSubmit = () => {
+    if (name && description) {
+      if(voucherId === "") {
+        voucherService.PostVoucher(name, description).then(
+          response => { 
+            if(response.data && response.data.success) {
+              setSuccess(true)
+              setOpen(false);  
+              clearScreen();    
+            }
+            
+          }, error => {
+            alert("Dữ liệu không hợp lệ")
+            console.log("Error Submit",error)
+          }
+        )
+      } else {
+        voucherService.PutVoucherById(name, description, voucherId).then(
+          response => { 
+            if(response.data && response.data.success) {
+              setSuccess(true)
+              setOpen(false);  
+              clearScreen();  
+            }
+            
+          }, error => {
+            alert("Dữ liệu không hợp lệ")
+            console.log("Error Submit",error)
+          }
+        )
+      }  
+    } else {
+      alert("Vui lòng nhập đầy đủ thông tin")
+    }
+      
+      
+  }
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - vouchers.length) : 0;
 
-  const isNotFound = !filteredUsers.length && !!filterName;
+  const filteredDatas = applySortFilter(vouchers, getComparator(order, orderBy), filterName);
+
+  const isNotFound = !filteredDatas.length && !!filterName;
   useEffect(() =>{
-    gameService.GameAll().then(
+    voucherService.VoucherAllByStore().then(
       response =>{
-        if( response.data && response.data.success && response.data.data) {
-          console.log("Game",response.data.data)
-          setGames(response.data.data.games)          
-        }        
+        if(response.data  && response.data.success) {
+          console.log("voucherSeriesList =>",response.data.data.voucherSeriesList)
 
+          setVouchers(response.data.data.voucherSeriesList)
+          setSuccess(false)
+        }
       }, error => {
         if(error.response && error.response.status === 401) {
           console.log(error.response)
@@ -217,15 +277,17 @@ export default function Game() {
   return (
     <>
       <Helmet>
-        <title> Games  </title>
+        <title> Vouchers  </title>
       </Helmet>
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-          Games
+          Vouchers
           </Typography>
-          
+          <Button onClick={handleClickNew} variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+            New Voucher
+          </Button>
         </Stack>
 
         <Card>
@@ -238,38 +300,32 @@ export default function Game() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={games.length}
+                  rowCount={vouchers.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, description, instruction, imageUrl, isEnable } = row;
+                  {filteredDatas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                    const { id, name, description } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
                       <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                         
+                        
 
                         <TableCell align="left">{name}</TableCell>
 
-                        <TableCell align="left">{description}</TableCell>
+                        <TableCell align="left">{description}</TableCell>                                          
 
-                        <TableCell align="left">{instruction}</TableCell>
-
-                        <TableCell align="left">{imageUrl}</TableCell>
-
-                        <TableCell align="left">
-                          {isEnable ? <Label color="success">{sentenceCase('Yes')}</Label>: 
-                          <Label color="warning">{sentenceCase('No')}</Label>}
-                        </TableCell>      
                         <TableCell align="right">                        
-                          <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id, name)}>
-                          <Iconify icon={'ep:view'}  sx={{ mr: 2 }} />                          
-                          </IconButton>                          
-                        </TableCell>                
-                        
+                          <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id)}>
+                          <Iconify icon={'eva:edit-fill'}  sx={{ mr: 2 }} />                          
+                          </IconButton>
+                          <IconButton size="large" color="inherit" onClick={()=>handleClickDelete(id)}>
+                          <Iconify  icon={'eva:trash-2-outline'} color="red" sx={{ mr: 2 }} />                        
+                          </IconButton>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -310,7 +366,7 @@ export default function Game() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={games.length}
+            count={vouchers.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -319,56 +375,37 @@ export default function Game() {
         </Card>
 
       </Container>
+
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>New Game</DialogTitle>
+        <DialogTitle>New Voucher</DialogTitle>
         <DialogContent>
+        <br/>
         <Grid container spacing={2}>
-        <Grid xs={12}>
-          <Label>Name</Label>
-        <TextField 
-        name="name" 
-        fullWidth
-        value={name} 
-        disabled
-        onChange={(event) => { handleChangeName(event) }}
-        />
+          <Grid xs={12}>
+          <TextField 
+            name="name" 
+            label="Name" 
+            fullWidth
+            value={name} 
+            required
+            onChange={(event) => { handleChangeName(event) }}
+            />
+          </Grid>
+          <Grid xs={12}>
+          <TextField 
+            name="description" 
+            label="Description" 
+            value={description} 
+            fullWidth
+            required
+            onChange={(event) => { handlechangeDescription(event) }}
+            />
+          </Grid>
         </Grid>
-        <Grid xs={12}>
-          <Label>Description</Label>
-        <TextField 
-        name="description" 
-        value={description} 
-        fullWidth
-        disabled
-        onChange={(event) => { handlechangeDescription(event) }}
-        />
-        </Grid>
-        <Grid xs={12}>
-        <Label>Instruction</Label>
-        <TextField 
-        name="instruction" 
-        value={instruction} 
-        fullWidth
-        disabled
-        onChange={(event) => { handlechangeInstruction(event) }}
-        />  
-        </Grid>
-        <Grid xs={12}>
-        <Label>Image</Label>
-        <TextField 
-        name="imageUrl" 
-        value={imageUrl} 
-        fullWidth
-        disabled
-        onChange={(event) => { handlechangeImageUrl(event) }}
-        />  
-        </Grid>
-        </Grid>
-        
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClickCancel}>Cancel</Button>
-          
+          <Button onClick={handleClickSubmit}>Submit</Button>
         </DialogActions>
       </Dialog>
       
