@@ -33,6 +33,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import axios from 'axios';
 // components
 import Label from '../../components/label';
 import Iconify from '../../components/iconify';
@@ -41,9 +42,10 @@ import Scrollbar from '../../components/scrollbar';
 
 
 import getService from '../../services/getEnum.service'
+import headerService from '../../services/header.service';
 import voucherService from '../../services/voucher.service';   
 import gameService from '../../services/game.service';
-
+import { convertStringToDate } from '../../utils/formatTime';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 import CampaignService from '../../services/campaign.service';
@@ -68,7 +70,7 @@ const TABLE_HEAD = [
 
 
 
-export default function CampaignDetail(props) {  
+export default function EditCampaign(props) {  
   
   const [success, setSuccess] = useState(false);
 
@@ -113,8 +115,17 @@ export default function CampaignDetail(props) {
   const [quantityText, setQuantityText] = useState(0)
 
   const [tempVoucher, setTempVoucher] = useState([]);
-  const isEnable = true;
+  const [campaignId, setCampaignId] = useState("");
+  
+  const [isEdit, setIsEdit] = useState(false);
+  const [expiresOn, setExpiresOn] = useState({
+    year: 0,
+    month: 0,
+    day: 0
+  })
 
+  const isEnable = true;
+  
   const handleChangeName = (event) => {
     setName(event.target.value) 
   }
@@ -133,6 +144,13 @@ export default function CampaignDetail(props) {
 
   const handlechangeExpiresOn = (event) => {
     setExpiresOnText(event.target.value) 
+    const tempExpiresOn = event.target.value.split("-");
+    setExpiresOn({
+      year: tempExpiresOn[0],
+      month: tempExpiresOn[1],
+      day: tempExpiresOn[2]
+    })
+            
   }
 
   const handlechangeEndDate = (event) => {
@@ -151,31 +169,35 @@ export default function CampaignDetail(props) {
     setOpen(false)    
   }
   const handleClickEdit = (id) => {
-    
-    voucherService.GetVoucherById(id).then(
-      response => { 
-        
-        if (response.data && response.data.success) {
-          const temp = response.data.data.voucherSeries
-          setOpen(true)
-          setVoucherId(temp.id);
-          setName(temp.name);
-          setDescription(temp.description)
-                    
-        }
-        
-      }, error => {
-        console.log(error)
-      }
-    )
-    
+    const temp = tempVoucher.filter(e =>e.id === id)[0]
+    console.log(temp)
+    setOpen(true)
+    setVoucherId(temp.id);
+    setDescriptionVoucher(temp.description)
+    setQuantityText(temp.quantity)
+    setIsEdit(true)
+    setExpiresOnText(convertStringToDate(temp.expiresOn))    
+    setExpiresOn(temp.expiresOn)
   };
   const handleClickDelete = (id) => {
+    const voucherSeriesId = id
+   
     if(window.confirm(`Are you want delete `)) {
-      const temp = tempVoucher.filter((e) => e.voucherSeriesId !== id)
-      setTempVoucher(temp)
-      
+      console.log(campaignId, voucherSeriesId)      
+      CampaignService.DeleteVoucherCampaign(campaignId, voucherSeriesId).then(
+        response => {
+          if(response.data && response.data.success === true) {
+            const temp = response.data.data.campaignVoucherSeriesList;
+            console.log(response.data.data.campaignVoucherSeriesList)
             
+            alert("Delete voucher Success")
+            setTempVoucher(temp)
+          } 
+        } , error => {
+          alert("Có lỗi")
+          console.log(error)
+        }
+      ) 
     }
     
   };
@@ -207,7 +229,7 @@ export default function CampaignDetail(props) {
 
   const handleClickNew = () => {
     setOpen(true);
-    
+    setIsEdit(false)
   }
   const handleClickCancel = () => {
     setOpen(false);
@@ -221,7 +243,7 @@ export default function CampaignDetail(props) {
     setNameVoucher("");
   }
   const handleClickSaveCampaign = () => {
-    if(name && description && startDateText && endDateText && gameId && tempVoucher.length >= 1 && winRate) {
+    if(name && description && startDateText && endDateText && gameId  && winRate) {
         if(startDateText < endDateText) {
             const tempStartDate = startDateText.split("-");
             const tempEndDate = endDateText.split("-");
@@ -235,21 +257,12 @@ export default function CampaignDetail(props) {
                 month: tempEndDate[1],
                 day: tempEndDate[2]
             }
-            const campaignInfo = {
-                name,
-                description,
-                startDate,
-                endDate,
-                gameId,
-                isEnable,
-                winRate
-            }
-            const campaignVoucherSeriesList = tempVoucher
-            CampaignService.PostCampaign(campaignInfo, campaignVoucherSeriesList).then(
+            
+            CampaignService.PutCampaignInfoByCampaignId(campaignId, name, description, startDate, endDate, gameId, winRate).then(
                 response => {
                     if(response.data && response.data.success) {
-                        alert("Create Sucess")
-                        window.location.assign('/campaign')
+                        alert("Update Sucess")
+                        
                     }
                 }, error => {
                     alert("Dữ liệu không hợp lệ")
@@ -267,41 +280,67 @@ export default function CampaignDetail(props) {
 
   const handleClickSubmit = () => {
     if(voucherId && descriptionVoucher && expiresOnText && quantityText > 0) {
-        
-        const checkVoucherId = tempVoucher.filter(option => option.voucherSeriesId === voucherId).length
-        if(checkVoucherId === 0) {
-            const tempExpiresOn = expiresOnText.split("-");
-            setTempVoucher([...tempVoucher, {
-                voucherSeriesId: voucherId,
-                name: nameVoucher,
-                description: descriptionVoucher,
-                quantity: parseInt(quantityText,10),
-                expiresOn: {
-                    year: tempExpiresOn[0],
-                    month: tempExpiresOn[1],
-                    day: tempExpiresOn[2]
-                },
-                
-            }])
-            setOpen(false)
-            clearScreen();
+        if(isEdit === true) {
+          CampaignService.PutVoucherCampaign(campaignId, voucherId, quantityText, expiresOn).then(
+            response => {
+              if(response.data && response.data.success === true) {
+                const temp = response.data.data.campaignVoucherSeriesList;
+                setTempVoucher(temp)
+                alert("Update Voucher Success")
+                setOpen(false)
+                clearScreen();
+              }
+            }, error => {
+              alert("Có lỗi")
+            }
+          )
         } else {
-            alert("Voucher đã tồn tại")
+          console.log(campaignId, voucherId, quantityText, expiresOn)
+          CampaignService.PostVoucherCampaign(campaignId, voucherId, quantityText, expiresOn).then(
+            response => {
+              if(response.data && response.data.success === true) {
+                const temp = response.data.data.campaignVoucherSeriesList;
+                setTempVoucher(temp)
+                alert("Create Voucher Success")
+                setOpen(false)
+                clearScreen();
+              }
+            }, error => {
+              alert("Có lỗi")
+            }
+          )
         }
-        
-
+                
     }   else {
         alert("Vui lòng nhập đầy đủ thông tin");
     }   
       
   }
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tempVoucher.length) : 0;
-
-  
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tempVoucher.length) : 0; 
 
 
   useEffect(() =>{
-    if(props.load === true) {
+    if(props.editDisplay === true && props.campaignIdText) {
+      CampaignService.GetCampaignById(props.campaignIdText).then(
+        response => {
+          if(response.data && response.data.success === true) {
+            const temp = response.data.data.campaign
+            console.log(temp)
+            setCampaignId(temp.id);
+            setName(temp.name);
+            setDescription(temp.description);
+            setStartDateText(convertStringToDate(temp.startDate))
+            setEndDateText(convertStringToDate(temp.endDate))
+            setGameId(temp.gameId)
+            setTempVoucher(temp.campaignVoucherList)
+            setWinRate(temp.winRate)
+            
+
+          }
+        }, error => {
+          console.log(error)
+        }
+      )
         voucherService.VoucherAllByStore().then(
             response =>{
               if(response.data  && response.data.success) {
@@ -317,8 +356,7 @@ export default function CampaignDetail(props) {
         gameService.GameAll().then(
             response => {
                 if(response.data && response.data.success) {
-                    const temp = response.data.data.games;
-                    
+                    const temp = response.data.data.games;                    
                     setGames( temp)
                 }
                 
@@ -332,7 +370,7 @@ export default function CampaignDetail(props) {
   return (
     <>
       <Helmet>
-        <title> CampaignDetail  </title>
+        <title> Edit Campaign  </title>
       </Helmet>
 
       <Container>
@@ -447,11 +485,11 @@ export default function CampaignDetail(props) {
                 />
                 <TableBody>
                   {tempVoucher.map((row) => {
-                    const { voucherSeriesId, name, description, quantity, expiresOn } = row;
+                    const { id, name, description, quantity, expiresOn } = row;
                     
 
                     return (
-                      <TableRow hover key={voucherSeriesId} tabIndex={-1} role="checkbox" >
+                      <TableRow hover key={id} tabIndex={-1} role="checkbox" >
                         
                         
                         <TableCell align="left">{name}</TableCell>
@@ -464,8 +502,10 @@ export default function CampaignDetail(props) {
 
 
                         <TableCell align="right">                        
-                          
-                          <IconButton size="large" color="inherit" onClick={()=>handleClickDelete(voucherSeriesId)}>
+                        <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(id)}>
+                          <Iconify icon={'eva:edit-fill'}  sx={{ mr: 2 }} />                          
+                          </IconButton>
+                          <IconButton size="large" color="inherit" onClick={()=>handleClickDelete(id)}>
                           <Iconify  icon={'eva:trash-2-outline'} color="red" sx={{ mr: 2 }} />                        
                           </IconButton>
                         </TableCell>

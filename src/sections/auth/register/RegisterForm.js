@@ -36,11 +36,14 @@ export default function RegisterForm() {
     month:1,
     day:1
   });
-   const [company, setCompany] = useState("")
-   
-  
- 
-  
+   const [company, setCompany] = useState({
+    name: "",
+    businessCode: "",
+    address:{
+      wardId: "",
+      street: ""
+    }
+   })
   const [partnerTypes, setPartnerTypes] = useState([]);
   const [partnerType, setPartnerType] = useState("");
   const [userId, setUserId]  = useState("");
@@ -50,9 +53,9 @@ export default function RegisterForm() {
   const [districts, setDistricts] = useState([]);
   const [districtId, setDistrictId] = useState("");
   const [wards, setWards] = useState([]);
-  const [wardId, setWardId] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCompany, setShowCompany] = useState(false);
   
   const handleChangeOtp = (event) => {
     setOtpValue(event.target.value) 
@@ -84,10 +87,12 @@ export default function RegisterForm() {
   }
  
   const handleWardId = (event) => { 
-         
-    setWardId(event.target.value)
+     
     setAddress(prevState => ({ ...prevState,
-      wardId:event.target.value}))
+      wardId:event.target.value,
+      street: ""
+    }))
+      
   }
   const handleChangeStreet = (event) => {        
     
@@ -95,8 +100,12 @@ export default function RegisterForm() {
       street:event.target.value}))
   }
   const handleChangeType = (event) => {    
-    console.log(event.target.value)    
     setPartnerType(event.target.value)
+    if(event.target.value === "Company") {
+      setShowCompany(true)
+    } else {
+      setShowCompany(false)
+    }
   }
   const handleChangePassword = (event) => {        
     setPassword(event.target.value)
@@ -115,6 +124,12 @@ export default function RegisterForm() {
       }
     )
     setProvineId(event.target.value)
+    setDistrictId("");
+    setAddress({
+      wardId: "",
+      street: ""
+    })
+
   }
 
   const handleChangeDistrictId = (event) => {  
@@ -127,6 +142,10 @@ export default function RegisterForm() {
       }
     )
     setDistrictId(event.target.value)
+    setAddress({
+      wardId: "",
+      street: ""
+    })
   }
   
   const handleChangeGender = (event) => {        
@@ -169,31 +188,33 @@ export default function RegisterForm() {
       company
       }
     
-    if(password !== confirmPassword){
-      alert("Password and ConfirmPassword are not the same");
-    } else if(userName && password && name && gender && dateOfBirth &&  partnerType && provineId && districtId && wardId) {
+    if(password === confirmPassword){
+      if(userName && password && name && gender && dateOfBirth &&  partnerType && provineId && districtId && address.wardId && address.street) {
       
-      partner.register( account
-        ).then(
-          response=>{
-            console.log(response)
-            
-            if(response.status === 200 && response.data.data){
+        partner.register( account
+          ).then(
+            response=>{
+              console.log(response)
               
-              setShow(true);              
+              if(response.status === 200 && response.data.data){
+                
+                setShow(true);              
+                
+                setUserId(response.data.data.userAccount.id);
+                
+              }
               
-              setUserId(response.data.data.userAccount.id);
-              
+            }, error =>{
+              console.log(error)
             }
-            
-          }, error =>{
-            console.log(error)
-          }
-        )
-    } else{
-      alert("====")
-    }
-    
+          )
+      } else{
+        alert("Vui lòng nhập đầy đủ thông tin")
+      }
+      
+    } else {
+      alert("Password and ConfirmPassword are not the same");
+    }    
       
   };
   useEffect (()=>{
@@ -322,7 +343,7 @@ export default function RegisterForm() {
       <TextField
                   fullWidth
                   select
-                  value={wardId}
+                  value={address.wardId}
                   id="country"       
                   onChange= {handleWardId}
                 >

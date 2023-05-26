@@ -27,6 +27,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 // components
 import Label from '../../components/label';
@@ -95,6 +96,8 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+const statusEnable = ["Enable             ", "Disable          "]
+
 export default function Store() {  
 
   const [stores, setStores] = useState([])
@@ -135,7 +138,11 @@ export default function Store() {
   const [wards, setWards] = useState([]);
   const [storeId, setStoreId] = useState("");
 
+  const [isEnable, setIsEnable] = useState("");
+
   const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const [openEnable, setOpenEnable] = useState(false);
 
   const handleChangeName = (event) => {
     setName(event.target.value) 
@@ -258,6 +265,65 @@ export default function Store() {
     setOpen(false);
     
   }
+  const clearScreen = () => {
+    setName("");
+    setDescription("")
+    setOpenTime({
+      hour: 0,
+      minute:0
+    })
+    setCloseTime({
+      hour: 0,
+      minute: 0
+    })
+    setAddress("");
+    setOpenTimeText("");
+    setCloseTimeText("");
+    setIsEnable("");
+  }
+
+  const handleChangeStatusEnable = (event) =>{
+    setIsEnable(event.target.value)
+  }
+
+  const handleClickEditEnable = (id) =>{    
+    setStoreId(id);
+    setOpenEnable(true)
+  }
+
+  const handleClickSubmitEnable = () => {
+    if(isEnable) {
+      if(isEnable === statusEnable[0]) {
+        storeService.StoreEnableStoreId().then(
+          response => {
+            if(response.data  && response.data.success === true) {
+              alert("Enable Store success");
+              setOpenEnable(false)
+              setSuccess(!success)
+              clearScreen()
+            }
+          }
+        )
+        
+      } 
+      else if(isEnable === statusEnable[1]) {
+        storeService.StoreDisableStoreId().then(
+          response => {
+            if(response.data  && response.data.success === true) {
+              alert("Disable Store success");
+              setOpenEnable(false)
+              setSuccess(!success)
+              clearScreen();
+            }
+            
+          }
+        )        
+      }
+    } else {
+      alert("Please choose Status");
+    }
+  }
+
   const handleClickSubmit = () => {    
     console.log(name,description,address,openTime,closeTime)
     if(name && description && provineId && districtId  && address && openTimeText && closeTimeText) {
@@ -269,7 +335,8 @@ export default function Store() {
               if(response.data &&  response.data.success) {
                 alert(display.SUCCESS_STORE)   
                 setOpen(false);  
-                setSuccess(true)           
+                setSuccess(true) 
+                clearScreen();          
               }
               
             }, error => {
@@ -283,7 +350,8 @@ export default function Store() {
               if(response.data &&  response.data.success) {
                 alert(display.UPDATE_STORE)   
                 setOpen(false);  
-                setSuccess(true)           
+                setSuccess(true)       
+                clearScreen();    
               }
               
             }, error => {
@@ -323,7 +391,7 @@ export default function Store() {
 
   
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - stores.length) : 0;
 
   const filteredUsers = applySortFilter(stores, getComparator(order, orderBy), filterName);
 
@@ -417,8 +485,9 @@ export default function Store() {
                         <TableCell align="left">{closeTime.hour}: {closeTime.minute}</TableCell>
                         
                         <TableCell align="left">
-                          {isEnable ? <Label color="success">{sentenceCase('Yes')}</Label>: 
-                          <Label color="warning">{sentenceCase('No')}</Label>}
+                        {(isEnable === true ) ? 
+                          (<Button className='btn btn-primary' onClick={() => handleClickEditEnable(id)}>Enable</Button>):                           
+                          (<Button className='btn btn-warning' onClick={() => handleClickEditEnable(id)}>Disable</Button>)}
                         </TableCell> 
 
                         <TableCell align="left">
@@ -600,7 +669,38 @@ export default function Store() {
           <Button onClick={handleClickSubmit}>Submit</Button>
         </DialogActions>
       </Dialog>
-      
+      <Dialog open={openEnable} onClose={handleClose}>
+        <DialogTitle>Edit Enable</DialogTitle>
+        <DialogContent> 
+        <DialogContentText>
+            Please choose Enable or Disable.
+          </DialogContentText>
+          <Grid container spacing={2}>
+          <Grid item xs={12}>
+          <TextField
+                  label="Status"
+                  fullWidth
+                  select
+                  variant="outlined"
+                  value={isEnable}
+                  id="country"      
+                  onChange= {handleChangeStatusEnable}
+                >
+                  {statusEnable  && statusEnable.map((option) => (
+             <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          )
+          )}
+            </TextField>  
+          </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClickCancel}>Cancel</Button>
+          <Button onClick={handleClickSubmitEnable}>Submit</Button>
+        </DialogActions>
+      </Dialog>
       
     </>
   );

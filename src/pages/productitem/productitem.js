@@ -28,6 +28,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import DialogContentText from '@mui/material/DialogContentText';
 // components
 import Label from '../../components/label';
 import Iconify from '../../components/iconify';
@@ -91,6 +92,8 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+const statusEnable = ["Enable             ", "Disable          "]
+
 export default function ProductItem() {  
   const [success, setSuccess] = useState(false)
   
@@ -120,6 +123,52 @@ export default function ProductItem() {
   const [productItemId, setProductItemId]  = useState("");
   
   const [imageUrl, setImageUrl] = useState("/Image/ProductItem");
+
+  const [isEnable, setIsEnable] = useState("");
+  const [openEnable, setOpenEnable] = useState(false);
+
+  const handleClickEnable = (id) => {
+    setProductItemId(id)
+    setOpenEnable(true)
+  }
+
+  const handleClickChange = (event) => {
+    setIsEnable(event.target.value)
+  }
+
+  const handleChangeStatusEnable = () => {
+    if(isEnable) {
+      if(isEnable === statusEnable[0]) {
+        productitemService.PutEnableProductItemById(productItemId).then(
+          response => {
+            if(response.data  && response.data.success === true) {
+              alert("Enable Success");
+              setOpenEnable(false)
+              setSuccess(!success)
+              setIsEnable("")
+            }
+          }
+        )        
+      } 
+      else if(isEnable === statusEnable[1]) {
+        productitemService.PutDisableProductItemById(productItemId).then(
+          response => {
+            if(response.data  && response.data.success === true) {
+              alert("Disable Success");
+              setOpenEnable(false)
+              setSuccess(!success)
+              setIsEnable("")
+            }
+            
+          }
+        )        
+      }
+    } else {
+      alert("Please choose Status");
+    }
+  }
+
+  
 
   const handleChangeName = (event) => {
     setName(event.target.value) 
@@ -269,10 +318,10 @@ export default function ProductItem() {
         console.log(error)
       }
     )
-    productitemService.ProductItemAvailableByStoreId().then(
+    productitemService.ProductItemAllByStoreId().then(
       response =>{
         if(response.data  && response.data.success) {
-          setSuccess(false)
+          
           setProductItems(response.data.data.productItems)
         }
       }, error => {
@@ -348,8 +397,9 @@ export default function ProductItem() {
                         <TableCell align="left">{productCategory.name}</TableCell>
 
                         <TableCell align="left">
-                          {isEnable ? <Label color="success">{sentenceCase('Yes')}</Label>: 
-                          <Label color="warning">{sentenceCase('No')}</Label>}
+                        {(isEnable === true ) ? 
+                          (<Button className='btn btn-primary' onClick={() => handleClickEnable(id)}>Enable</Button>):                           
+                          (<Button className='btn btn-warning' onClick={() => handleClickEnable(id)}>Disable</Button>)}
                         </TableCell>                         
 
                         <TableCell align="right">                        
@@ -480,7 +530,42 @@ export default function ProductItem() {
           <Button onClick={handleClickSubmit}>Submit</Button>
         </DialogActions>
       </Dialog>
-      
+      <Dialog open={openEnable} onClose={handleClose}>
+      <DialogTitle>Edit Enable</DialogTitle>
+        <DialogContent> 
+        <DialogContentText>
+            Please choose Enable or Disable.
+          </DialogContentText>
+        <Grid container spacing={2}>
+
+        <Grid xs={12}>
+          <Label>Status</Label>
+          <TextField
+                  fullWidth
+                  select
+                  variant="outlined"
+                  value={isEnable}
+                  id="country"      
+                  onChange= {handleClickChange}
+                >
+           {statusEnable  && statusEnable.map((option) => (
+             <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          )
+          )}
+          </TextField>
+        </Grid> 
+        
+        
+        </Grid>
+        
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClickCancel}>Cancel</Button>
+          <Button onClick={handleChangeStatusEnable}>Change</Button>
+        </DialogActions>
+      </Dialog>
       
     </>
   );

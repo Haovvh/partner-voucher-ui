@@ -7,14 +7,6 @@ const register = ( account) =>(
     
 
 
-const registerCompany = (name, businessCode, address, userId) => (
-    axios.post(`${process.env.REACT_APP_API_URL}/Partner/RegisterCompany/${userId}`,{
-        name, businessCode, address
-    }, { 
-        headers: headerService.accessToken() 
-    })
-);
-
 const verifyRegister = (otpValue, userId) =>(
     axios.post(`${process.env.REACT_APP_API_URL}/Partner/VerifyRegister/${userId}`,{
         otpValue
@@ -68,7 +60,6 @@ const Logout = () => {
 
   const partnerService = {
     register,
-    registerCompany,
     verifyRegister,
     login,
     refreshToken,

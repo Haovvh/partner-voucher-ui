@@ -1,6 +1,6 @@
 const accessToken = () => {
   const user = JSON.parse(localStorage.getItem('token'));
-  
+  console.log(user.accessToken)
   
   if (user &&  user.accessToken)  {
     return {

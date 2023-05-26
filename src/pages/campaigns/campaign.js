@@ -2,6 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import { camelCase, filter, set } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useEffect, useState } from 'react';
+
+import DialogTitle from '@mui/material/DialogTitle';
 // @mui
 import {
   Card,
@@ -26,10 +28,17 @@ import {
   Modal 
 } from '@mui/material';
 
+
+import Grid from '@mui/material/Unstable_Grid2';
+
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
-import CampaignDetail from './detail.campaign';
-
 import Label from '../../components/label';
 
 import CampaignService from '../../services/campaign.service';
@@ -39,6 +48,8 @@ import CampaignService from '../../services/campaign.service';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
 
+import EditCampaign from './edit.campaign';
+import CampaignDetail from './detail.campaign';
 import headerService from '../../services/header.service';
 import partnerService from '../../services/partner.service';
 
@@ -88,7 +99,11 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+const statusEnable = ["Enable             ", "Disable          "]
+
 export default function Campaign() {  
+
+  const [edit, setEdit] = useState(false);
   
   const [success, setSuccess] = useState(false);
 
@@ -110,25 +125,21 @@ export default function Campaign() {
 
   const [voucherId, setVoucherId] = useState("");
 
+  const [openEnable, setOpenEnable] = useState(false);
+
+  const [isEnable, setIsEnable] = useState("");
+
+  const [campaignId, setCampaignId] = useState("");
+
    
   const handleClickEdit = (id) => {
-    alert(id)
-    CampaignService.GetCampaignById(id).then(
-      response => { 
-        if (response.data && response.data.success) {
-          const temp = response.data.data
-          console.log(temp)         
-          
-        }
-        
-      }, error => {
-        console.log(error)
-      }
-    )
+    
+    setCampaignId(id);
+    setEdit(true)
     
   };
   const handleClickDelete = (id) => {
-    if(window.confirm(`Are you want delete ${id}`)) {
+    if(window.confirm(`Are you want delete `)) {
       CampaignService.DeleteCampaignById(id).then(
         response => { 
           if (response.data && response.data.success) {
@@ -137,12 +148,21 @@ export default function Campaign() {
           }
           
         }, error => {
-          console.log(error)
+          alert("Có lỗi")
         }
       )
     }
     
   };
+
+  const handleClickEditEnable = (id) =>{    
+    setOpenEnable(true)
+    
+  }
+  
+  const handleChangeStatusEnable = (event) =>{
+    setIsEnable(event.target.value)
+  }
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -150,10 +170,52 @@ export default function Campaign() {
     setOrderBy(property);
   };
 
+  const handleClickSubmitEnable = () => {
+    if(isEnable) {
+      if(isEnable === statusEnable[0]) {
+        CampaignService.CampaignEnableByCampaignId(campaignId).then(
+          response => {
+            if(response.data  && response.data.success) {
+              alert("Enable Campaign success");
+              setOpenEnable(false)
+              setSuccess(!success)
+            }
+          }
+        )
+        
+      } 
+      else if(isEnable === statusEnable[1]) {
+        CampaignService.CampaignDisableByCampaignId(campaignId).then(
+          response => {
+            if(response.data  && response.data.success) {
+              alert("Disable Campaign success");
+              setOpenEnable(false)
+              setSuccess(!success)
+            }
+            
+          }
+        )        
+      }
+    } else {
+      alert("Please choose Status");
+    }
+  }
+
+  const handleClose = () => {  
+    setOpenEnable(false)
+
+    setIsEnable("")
+  }
+
   
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+
+  const handleClickCancel = () => {    
+    setOpenEnable(false)
+    setIsEnable("")
+  }
 
   const handleChangeRowsPerPage = (event) => {
     setPage(0);
@@ -210,7 +272,8 @@ export default function Campaign() {
       <Helmet>
         <title> Campaigns  </title>
       </Helmet>
-
+      {edit === true && campaignId !== "" ? <EditCampaign editDisplay={edit} campaignIdText={campaignId}/> : 
+      <>
       {isDetail ? <CampaignDetail load={isDetail}/> : 
 
       (<Container>
@@ -254,8 +317,9 @@ export default function Campaign() {
                         <TableCell align="left">{gameName}</TableCell>   
 
                         <TableCell align="left">
-                          {isEnable ? <Label color="success">{sentenceCase('Yes')}</Label>: 
-                          <Label color="warning">{sentenceCase('No')}</Label>}
+                        {(isEnable === true ) ? 
+                          (<Button className='btn btn-primary' onClick={() => handleClickEditEnable(id)}>Enable</Button>):                           
+                          (<Button className='btn btn-warning' onClick={() => handleClickEditEnable(id)}>Disable</Button>)}
                         </TableCell>
 
                         <TableCell align="left">{status}</TableCell>        
@@ -322,7 +386,41 @@ export default function Campaign() {
 
       </Container>  
       )}  
-      
-    </>
+      <Dialog open={openEnable} onClose={handleClose}>
+        <DialogTitle>Edit Enable</DialogTitle>
+        <DialogContent> 
+        <DialogContentText>
+            Please choose Enable or Disable.
+          </DialogContentText>
+          <Grid container spacing={2}>
+          <Grid item xs={12}>
+          <TextField
+                  label="Status"
+                  fullWidth
+                  select
+                  variant="outlined"
+                  value={isEnable}
+                  id="country"      
+                  onChange= {handleChangeStatusEnable}
+                >
+                  {statusEnable  && statusEnable.map((option) => (
+             <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          )
+          )}
+            </TextField>  
+          </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClickCancel}>Cancel</Button>
+          <Button onClick={handleClickSubmitEnable}>Submit</Button>
+        </DialogActions>
+      </Dialog>
+      </>
+    
+      }
+      </>
   );
 }

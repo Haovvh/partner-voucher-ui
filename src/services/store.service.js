@@ -24,22 +24,28 @@ const PutStore = (name, description, address, openTime, closeTime, isEnable = tr
     headers: headerService.accessToken() 
     })
 );
-const StoreEnable = () => (
-    axios.put(`${process.env.REACT_APP_API_URL}/Partner/Store/Enable`, { 
-        headers: headerService.accessToken() 
-    })
-);
-const StoreDisable = () => (
-    axios.put(`${process.env.REACT_APP_API_URL}/Partner/Store/Disable`,{ 
-        headers: headerService.accessToken() 
-    })
-);
- 
+const StoreEnableStoreId = () => (
+    axios.put(`${process.env.REACT_APP_API_URL}/Partner/Store/Enable`, {
+  
+    },{ 
+      headers: headerService.accessToken()
+  })
+  );
+  
+  const StoreDisableStoreId = () => (
+    axios.put(`${process.env.REACT_APP_API_URL}/Partner/Store/Disable`, {
+      
+    }, { 
+      headers: headerService.accessToken()
+  })
+  );
+  
+  
 
   export default {
     StoreDetail,
     StoreRegister,
-    StoreEnable,
-    StoreDisable,
+    StoreEnableStoreId,
+    StoreDisableStoreId,
     PutStore
   }

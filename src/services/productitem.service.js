@@ -2,8 +2,9 @@ import axios from "axios";
 
 import headerService from "./header.service";
 
-const ProductItemAll = () => (
-    axios.get(`${process.env.REACT_APP_API_URL}/ProductItem/All`, { 
+
+  const ProductItemAllByStoreId = (storeId = headerService.getUserId()) => (
+    axios.get(`${process.env.REACT_APP_API_URL}/ProductItem/All/${storeId}`, { 
       headers: headerService.accessToken()
   })
   );
@@ -24,13 +25,13 @@ const ProductItemAll = () => (
   );
   
   const DeleteProductItemById = (productItemId) => (
-    axios.delete(`${process.env.REACT_APP_API_URL}/ProductItem/${productItemId}`, { 
+    axios.delete(`${process.env.REACT_APP_API_URL}/ProductItem/${productItemId}`, {},{ 
       headers: headerService.accessToken()
   })
   );
   
-  const PutDisableProductItemById = ( ProductItemId) => (
-    axios.put(`${process.env.REACT_APP_API_URL}/ProductItem/Disable/${ProductItemId}`,{
+  const PutDisableProductItemById = ( productItemId) => (
+    axios.put(`${process.env.REACT_APP_API_URL}/ProductItem/Disable/${productItemId}`,{
       
     }, { 
       headers: headerService.accessToken()
@@ -64,12 +65,13 @@ const ProductItemAll = () => (
 
   export default {
     PostProductItem,
-    ProductItemAll,
+    
     ProductItemAvailable,
     GetProductItemById,
     PutProductItemById,
     PutDisableProductItemById,
     PutEnableProductItemById,
     DeleteProductItemById,
-    ProductItemAvailableByStoreId
+    ProductItemAvailableByStoreId,
+    ProductItemAllByStoreId
   }
