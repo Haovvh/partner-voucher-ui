@@ -382,9 +382,9 @@ export default function Voucher() {
         <br/>
         <Grid container spacing={2}>
           <Grid xs={12}>
+          <Label>Name</Label>
           <TextField 
             name="name" 
-            label="Name" 
             fullWidth
             value={name} 
             required
@@ -392,9 +392,9 @@ export default function Voucher() {
             />
           </Grid>
           <Grid xs={12}>
+          <Label>Description</Label>
           <TextField 
             name="description" 
-            label="Description" 
             value={description} 
             fullWidth
             required

@@ -263,7 +263,7 @@ export default function Store() {
   }
   const handleClickCancel = () => {
     setOpen(false);
-    
+    setOpenEnable(false)
   }
   const clearScreen = () => {
     setName("");
@@ -557,9 +557,9 @@ export default function Store() {
         <DialogContent>
         <Grid container spacing={2}>
           <Grid item xs={12}>
+          <Label>Store Name</Label>
             <TextField 
               name="name" 
-              label="Store Name" 
               fullWidth
               value={name} 
               required
@@ -567,6 +567,7 @@ export default function Store() {
               />
           </Grid>
           <Grid item xs={12}>
+          <Label>Description</Label>
             <TextField 
               name="description" 
               label="Description" 
@@ -577,8 +578,8 @@ export default function Store() {
               />
           </Grid>
           <Grid item xs={6}>
+          <Label>Provine</Label>
           <TextField
-                  label="Provine"
                   fullWidth
                   select
                   variant="outlined"
@@ -595,8 +596,8 @@ export default function Store() {
           </TextField>
           </Grid>
           <Grid item xs={6}>
-          <TextField
-                  label="District"                  
+          <Label>District</Label>
+          <TextField                
                   select
                   fullWidth
                   variant="outlined"
@@ -613,8 +614,8 @@ export default function Store() {
             </TextField>
           </Grid>
           <Grid item xs={4}>
+          <Label>Ward</Label>
           <TextField
-                  label="Ward"
                   fullWidth
                   select
                   variant="outlined"
@@ -631,9 +632,9 @@ export default function Store() {
             </TextField>  
           </Grid>
           <Grid item xs={8}>
+          <Label>Street</Label>
             <TextField 
             name="street" 
-            label="Street" 
             fullWidth
             value={address.street} 
             required
@@ -677,8 +678,8 @@ export default function Store() {
           </DialogContentText>
           <Grid container spacing={2}>
           <Grid item xs={12}>
+          <Label>Status</Label>
           <TextField
-                  label="Status"
                   fullWidth
                   select
                   variant="outlined"

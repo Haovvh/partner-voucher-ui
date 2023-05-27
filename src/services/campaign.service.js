@@ -88,18 +88,8 @@ const DeleteVoucherCampaign = (campaignId, voucherSeriesId) =>(
 
 
 
-const DeleteVoucherCampaign01 = (campaignId, voucherSeriesId) =>(
-  axios.delete(`${process.env.REACT_APP_API_URL}/Campaign/Voucher/${campaignId}`, { 
-  headers: headerService.accessToken()
-  }, {
-    voucherSeriesId
-  })
-)
 
-
-
-  const CampaignService = {
-    DeleteVoucherCampaign01,
+  const CampaignService = {    
     PostCampaign,
     CampaignAllByStore,   
     GetCampaignById,

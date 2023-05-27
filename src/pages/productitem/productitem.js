@@ -257,6 +257,7 @@ export default function ProductItem() {
   }
   const handleClickCancel = () => {
     setOpen(false);
+    setOpenEnable(false)
     clearInput();
     
   }
@@ -464,9 +465,9 @@ export default function ProductItem() {
         <DialogContent>
         <Grid container spacing={2}>
           <Grid xs={12}>
+          <Label>Name</Label>
           <TextField 
             name="name" 
-            label="Name" 
             fullWidth
             value={name} 
             required
@@ -474,9 +475,9 @@ export default function ProductItem() {
             />
           </Grid>
           <Grid xs={12}>
+          <Label>Description</Label>
           <TextField 
             name="description" 
-            label="Description" 
             value={description} 
             fullWidth
             required
@@ -484,9 +485,9 @@ export default function ProductItem() {
             />             
           </Grid>
           <Grid xs={12}>
+          <Label>Price</Label>
             <TextField 
               name="price" 
-              label="Price" 
               type="number"
               value={price} 
               fullWidth
@@ -495,8 +496,8 @@ export default function ProductItem() {
               />
           </Grid>
           <Grid xs={12}>
+          <Label>ProductCategory</Label>
           <TextField
-                  label="ProductCategory"
                   fullWidth
                   select
                   variant="outlined"
@@ -513,9 +514,10 @@ export default function ProductItem() {
             </TextField>
           </Grid>
           <Grid xs={12}>
+          <Label>Image</Label>
             <TextField 
               name="Image" 
-              label="Image" 
+              type="file"
               value={imageUrl} 
               fullWidth
               required

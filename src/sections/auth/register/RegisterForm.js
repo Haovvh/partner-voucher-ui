@@ -36,14 +36,9 @@ export default function RegisterForm() {
     month:1,
     day:1
   });
-   const [company, setCompany] = useState({
-    name: "",
-    businessCode: "",
-    address:{
-      wardId: "",
-      street: ""
-    }
-   })
+   
+   const [companyName, setCompanyName] = useState("")
+   const [businessCode, setBusinessCode] = useState("")
   const [partnerTypes, setPartnerTypes] = useState([]);
   const [partnerType, setPartnerType] = useState("");
   const [userId, setUserId]  = useState("");
@@ -56,7 +51,13 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showCompany, setShowCompany] = useState(false);
-  
+  const [provinesCompany, setProvinesCompany] = useState([]);
+  const [provineCompanyId, setProvineCompanyId] = useState("");
+  const [districtCompanyId, setDistrictCompanyId] = useState("");
+  const [districtsCompany, setDistrictsCompany] = useState([]);
+  const [wardsCompany, setWardsCompany] = useState([]);
+  const [wardId, setWardId] = useState("");
+  const [street, setStreet] = useState("");
   const handleChangeOtp = (event) => {
     setOtpValue(event.target.value) 
   }
@@ -71,7 +72,43 @@ export default function RegisterForm() {
   const handleChangeName = (event) => {        
     setName(event.target.value)
   }
-  
+  const handleChangeCompanyWardId = (event) => {        
+    setWardId(event.target.value)
+    setStreet("")
+  }
+  const handleChangeCompanyStreet = (event) => {        
+    setStreet(event.target.value)
+  }
+  const handleChangeDistrictCompanyId = (event) => {  
+    getService.getAddressWardDistrictId(event.target.value).then(
+      response =>{
+        if(response.status === 200 && response.data.data) {
+          
+          setWardsCompany(response.data.data.wards);
+        }        
+      }
+    )
+        
+    setDistrictCompanyId(event.target.value)
+    setWardId("")
+    setStreet("")
+  }
+
+  const handleChangeProvineCompanyId = (event) => {   
+    getService.getAddressDistrictProvineId(event.target.value).then(
+      response =>{
+        if(response.status === 200 && response.data.data) {
+          setDistrictsCompany(response.data.data.districts);
+        } 
+      }
+    )
+    setDistrictCompanyId("");
+    setWardId("")
+    setStreet("")
+         
+    setProvineCompanyId(event.target.value)
+  }
+
   const handleChangeBirthDate = (event) => {    
     const date = event.target.value.toString().split('-');
     
@@ -84,6 +121,15 @@ export default function RegisterForm() {
 
   const handleClose = () => {
     setShow(false)    
+  }
+  const handleChangeCompanyName = (event) => { 
+     setCompanyName(event.target.value)
+      
+  }
+  const handleChangeBusinessCode = (event) => { 
+     
+    setBusinessCode(event.target.value)
+      
   }
  
   const handleWardId = (event) => { 
@@ -174,40 +220,60 @@ export default function RegisterForm() {
   }
 
   const handleClickRegister = () => {
-   
-    const account = {
-      account: {
-        userName,
-        password,
-        name,
-        gender,
-        dateOfBirth,
-        address
-      },
-      partnerType,
-      company
-      }
-    
     if(password === confirmPassword){
       if(userName && password && name && gender && dateOfBirth &&  partnerType && provineId && districtId && address.wardId && address.street) {
       
-        partner.register( account
-          ).then(
-            response=>{
-              console.log(response)
-              
-              if(response.status === 200 && response.data.data){
-                
-                setShow(true);              
-                
-                setUserId(response.data.data.userAccount.id);
-                
+        if(partnerType === "Company") {
+          if (companyName && businessCode && wardId && street) {
+            const company = {
+              name: companyName,
+              businessCode,
+              address: {
+                 wardId,
+                 street
               }
-              
-            }, error =>{
-              console.log(error)
             }
-          )
+            partner.register( userName, password, name, gender, dateOfBirth, address, partnerType, company
+              ).then(
+                response=>{
+                  console.log(response)
+                  
+                  if(response.status === 200 && response.data.data){
+                    
+                    setShow(true);              
+                    
+                    setUserId(response.data.data.userAccount.id);
+                    
+                  }
+                  
+                }, error =>{
+                  alert("Dữ liệu không phù hợp")
+                }
+              )
+
+          } else {
+            alert("Vui lòng nhập đủ thông tin");
+          }
+        } else {
+          partner.register( userName, password, name, gender, dateOfBirth, address, partnerType
+            ).then(
+              response=>{
+                console.log(response)
+                
+                if(response.status === 200 && response.data.data){
+                  
+                  setShow(true);              
+                  
+                  setUserId(response.data.data.userAccount.id);
+                  
+                }
+                
+              }, error =>{
+                alert("Dữ liệu không phù hợp")
+              }
+            )
+        }
+        
       } else{
         alert("Vui lòng nhập đầy đủ thông tin")
       }
@@ -244,7 +310,8 @@ export default function RegisterForm() {
     getService.getAddressProvines().then(
       response =>{
         if(response.data && response.status === 200){
-          setProvines(response.data.data.provines);          
+          setProvines(response.data.data.provines);       
+          setProvinesCompany(response.data.data.provines);        
         }
       }
     )
@@ -382,6 +449,94 @@ export default function RegisterForm() {
           )}
                   </TextField>
     </Grid>
+    {showCompany === true && 
+    <>
+    <Grid item xs={6}>
+      <Label>Company Name</Label>
+        <TextField 
+        fullWidth
+        name="companyname" 
+        
+        value={companyName} 
+        type="text"
+        required
+        onChange={(event) => { handleChangeCompanyName(event) }}
+        />
+      </Grid>
+ 
+      <Grid item xs={6}>
+      <Label>BusinessCode</Label>
+        <TextField 
+        name="BusinessCode" 
+        fullWidth
+        value={businessCode} 
+        required
+        onChange={(event) => { handleChangeBusinessCode(event) }}
+        />      
+      </Grid>
+      <Grid item xs={6}>
+      <Label>Provine</Label>
+      <TextField
+                  fullWidth
+                  select
+                  value={provineCompanyId}
+                  id="country"       
+                  onChange= {handleChangeProvineCompanyId}
+                >
+                  {provinesCompany  && provinesCompany.map((option) => (
+             <MenuItem key={option.id} value={option.id}>
+              {option.name}
+            </MenuItem>
+          )
+          )}
+          </TextField>      
+    </Grid>
+    <Grid item xs={6}>
+    <Label>District</Label>
+      <TextField
+                  fullWidth
+                  select
+                  value={districtCompanyId}
+                  id="country"         
+                  onChange= {handleChangeDistrictCompanyId}
+                >
+                  {districtsCompany  && districtsCompany.map((option) => (
+             <MenuItem key={option.id} value={option.id}>
+              {option.name}
+            </MenuItem>
+          )
+          )}
+            </TextField>  
+    </Grid>
+    <Grid item xs={4}>
+    <Label>Ward</Label>
+      <TextField
+                  fullWidth
+                  select
+                  value={wardId}
+                  id="country"       
+                  onChange= {handleChangeCompanyWardId}
+                >
+                  {wardsCompany  && wardsCompany.map((option) => (
+             <MenuItem key={option.id} value={option.id}>
+              {option.name}
+            </MenuItem>
+          )
+          )}
+            </TextField>
+    </Grid>
+    <Grid item xs={8}>
+    <Label>Street</Label>
+        <TextField 
+        fullWidth
+        name="street" 
+        value={street} 
+        required
+        onChange={(event) => { handleChangeCompanyStreet(event) }}
+        />
+    </Grid>
+    </>
+    }
     
     <Grid item xs={12}>
       <TextField
