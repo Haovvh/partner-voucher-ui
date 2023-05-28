@@ -275,7 +275,8 @@ export default function ProductItem() {
       productitemService.PostProductItem(name, description,productCategoryId, price).then(
         response => {
           if(response.data && response.data.success) {
-            setSuccess(true);          
+            alert("Create Success")
+            setSuccess(!success);          
             clearInput();
             setOpen(false);    
           }          
@@ -289,7 +290,7 @@ export default function ProductItem() {
         response => {
           if(response.data && response.data.success) {
             alert("Update Success")
-            setSuccess(true);          
+            setSuccess(!success);          
             clearInput();
             setOpen(false);    
           }
@@ -517,7 +518,6 @@ export default function ProductItem() {
           <Label>Image</Label>
             <TextField 
               name="Image" 
-              type="file"
               value={imageUrl} 
               fullWidth
               required
