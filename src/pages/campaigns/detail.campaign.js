@@ -38,7 +38,8 @@ import Label from '../../components/label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
 
-
+import headerService from '../../services/header.service';
+import partnerService from '../../services/partner.service';
 
 import getService from '../../services/getEnum.service'
 import voucherService from '../../services/voucher.service';   
@@ -65,7 +66,7 @@ const TABLE_HEAD = [
 // ----------------------------------------------------------------------
 
 
-
+const statusEnable = ["Enable             ", "Disable          "]
 
 
 export default function CampaignDetail(props) {  
@@ -113,7 +114,11 @@ export default function CampaignDetail(props) {
   const [quantityText, setQuantityText] = useState(0)
 
   const [tempVoucher, setTempVoucher] = useState([]);
-  const isEnable = true;
+
+  const [isEnable, setIsEnable] = useState("");
+
+  const [enable, setEnable ] = useState(false)
+  
 
   const handleChangeName = (event) => {
     setName(event.target.value) 
@@ -137,6 +142,16 @@ export default function CampaignDetail(props) {
 
   const handlechangeEndDate = (event) => {
     setEndDateText(event.target.value) 
+  }
+
+  const handleChangeStatusEnable = (event) =>{
+    setIsEnable(event.target.value)
+    if (event.target.value === statusEnable[0]) {
+      setEnable(true)
+    } else {
+      setEnable(false)
+    }
+
   }
 
   const handleChangeGame = (event) => {
@@ -220,7 +235,8 @@ export default function CampaignDetail(props) {
   }
   const handleClickSaveCampaign = () => {
     if(name && description && startDateText && endDateText && gameId && tempVoucher.length >= 1 && winRate) {
-        if(startDateText < endDateText) {
+        if(checkWinRate(winRate) === true) {
+          if(startDateText < endDateText) {
             const tempStartDate = startDateText.split("-");
             const tempEndDate = endDateText.split("-");
             const startDate = {
@@ -239,7 +255,7 @@ export default function CampaignDetail(props) {
                 startDate,
                 endDate,
                 gameId,
-                isEnable,
+                isEnable: enable,
                 winRate
             }
             const campaignVoucherSeriesList = tempVoucher
@@ -255,6 +271,9 @@ export default function CampaignDetail(props) {
             )
         } else {
             alert("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
+        }
+        } else {
+          alert("WinRate >= 1 && WinRate <= 100")
         }
         
     } else {
@@ -302,10 +321,25 @@ export default function CampaignDetail(props) {
                 console.log("voucherSeriesList =>",response.data.data.voucherSeriesList)
       
                 setVouchers(response.data.data.voucherSeriesList)
-                setSuccess(false)
+                
               }
             }, error => {
-              console.log("Error voucherSeriesList ==>",error)
+              if(error.response && error.response.status === 401) {
+                console.log(error.response)
+                const token = headerService.refreshToken();
+                partnerService.refreshToken(token).then(
+                  response => {
+                    console.log(response.data)
+                    if(response.data && response.data.success === true) {                
+                      localStorage.setItem("token", JSON.stringify(response.data.data));
+                      setSuccess(!success)
+                    }
+                  }, error => {
+                    console.log(error)
+                  }
+                )
+              }
+              
             }
         )
         gameService.GameAll().then(
@@ -321,7 +355,7 @@ export default function CampaignDetail(props) {
     }
     
     
-  },[])
+  },[success])
 
   return (
     <>
@@ -413,6 +447,25 @@ export default function CampaignDetail(props) {
                 required
                 onChange={(event) => { handleChangeWinRate(event) }}
                 />
+            </Grid>
+            <Grid xs={3}>
+            <Label>Enable </Label>
+            <TextField
+                  label="Status"
+                  fullWidth
+                  select
+                  variant="outlined"
+                  value={isEnable}
+                  id="country"      
+                  onChange= {handleChangeStatusEnable}
+                >
+                  {statusEnable  && statusEnable.map((option) => (
+             <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          )
+          )}
+            </TextField>
             </Grid>
         </Grid>
         <br/>
@@ -510,7 +563,7 @@ export default function CampaignDetail(props) {
                   onChange= {handleChangeVoucher}
                 >
                   {vouchers  && vouchers.map((option) => (
-             <MenuItem key={option.id} name={option.name} value={option.id}>
+             <MenuItem key={option.id} name={option.id} value={option.id}>
               {option.name}
             </MenuItem>
           )
