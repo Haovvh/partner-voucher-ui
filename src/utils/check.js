@@ -4,3 +4,10 @@ export  function checkPassword (password) {
     }
     return false;
 }
+
+export function checkWinRate (winRate) {
+    if (parseInt(winRate,10) >= 1 && parseInt(winRate,10) <= 100 ) {
+        return true;
+    }
+    return false;
+}

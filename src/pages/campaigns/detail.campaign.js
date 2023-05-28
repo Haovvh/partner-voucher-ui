@@ -48,7 +48,7 @@ import gameService from '../../services/game.service';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 import CampaignService from '../../services/campaign.service';
 // mock
-
+import { checkWinRate } from '../../utils/check';
 
 
 // ----------------------------------------------------------------------
@@ -458,7 +458,9 @@ export default function CampaignDetail(props) {
 
 
                         <TableCell align="right">                        
-                          
+                        <IconButton size="large" color="inherit" onClick={()=>handleClickEdit(voucherSeriesId)}>
+                          <Iconify icon={'eva:edit-fill'}  sx={{ mr: 2 }} />                          
+                          </IconButton>
                           <IconButton size="large" color="inherit" onClick={()=>handleClickDelete(voucherSeriesId)}>
                           <Iconify  icon={'eva:trash-2-outline'} color="red" sx={{ mr: 2 }} />                        
                           </IconButton>

@@ -157,6 +157,7 @@ export default function Campaign() {
   };
 
   const handleClickEditEnable = (id) =>{    
+    setCampaignId(id);
     setOpenEnable(true)
     
   }

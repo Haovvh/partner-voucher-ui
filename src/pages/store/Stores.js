@@ -228,6 +228,9 @@ export default function Store() {
             }
           )
         }
+      }, error => {
+        alert("Dữ liệu không hợp lệ")
+        setSuccess(!success)
       }
     )    
   };
@@ -335,12 +338,13 @@ export default function Store() {
               if(response.data &&  response.data.success) {
                 alert(display.SUCCESS_STORE)   
                 setOpen(false);  
-                setSuccess(true) 
+                setSuccess(!success)
                 clearScreen();          
               }
               
             }, error => {
               console.log(error)
+              setSuccess(!success)
             }
           )
         } else {
@@ -350,12 +354,13 @@ export default function Store() {
               if(response.data &&  response.data.success) {
                 alert(display.UPDATE_STORE)   
                 setOpen(false);  
-                setSuccess(true)       
+                setSuccess(!success)     
                 clearScreen();    
               }
               
             }, error => {
               console.log(error)
+              setSuccess(!success)
             }
           )
         }
