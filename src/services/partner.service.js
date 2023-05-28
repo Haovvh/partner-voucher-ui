@@ -9,7 +9,17 @@ const register = ( userName, password, name, gender, dateOfBirth, address, partn
         company
     })
 );
+const UpdatePartner = (   name, gender, dateOfBirth, address, partnerType, company = null) =>(
+    axios.put(`${process.env.REACT_APP_API_URL}/Partner/Update`,{
+        accountUpdate: {
+             name, gender, dateOfBirth, address
+        },partnerType,
+        company
+    },{ 
+        headers: headerService.accessToken() 
+    })
 
+);
     
 
 
@@ -26,7 +36,7 @@ const login = (userName, password) => (
 );
 
 const changePassword = (oldPassword, newPassword) => (
-    axios.post(`${process.env.REACT_APP_API_URL}/Partner/ChangePassword`,{
+    axios.put(`${process.env.REACT_APP_API_URL}/Partner/ChangePassword`,{
         oldPassword, newPassword
    }, { 
     headers: headerService.accessToken() 
@@ -40,6 +50,11 @@ const ResetPassword = (userName, newPassword) => (
     headers: headerService.accessToken() 
 })
 );
+const PartnerInfo = () => (
+    axios.get(`${process.env.REACT_APP_API_URL}/Partner/Info`,  { 
+     headers: headerService.accessToken()
+  })
+  )
 
 const VerifyResetPassword = (userName, otp) => (
     axios.post(`${process.env.REACT_APP_API_URL}/Partner/VerifyResetPassword`,{
@@ -72,7 +87,9 @@ const Logout = () => {
     Logout,
     changePassword, 
     ResetPassword,    
-    VerifyResetPassword
+    VerifyResetPassword,
+    PartnerInfo,
+    UpdatePartner
   }
 
 
