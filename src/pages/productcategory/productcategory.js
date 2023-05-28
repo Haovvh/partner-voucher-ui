@@ -106,7 +106,6 @@ export default function ProductCategory() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
 
-
   const handleChangeName = (event) => {
     setName(event.target.value) 
   }

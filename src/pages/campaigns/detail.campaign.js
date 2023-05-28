@@ -166,6 +166,7 @@ export default function CampaignDetail(props) {
         
       }, error => {
         console.log(error)
+        setSuccess(!success)
       }
     )
     
@@ -173,11 +174,8 @@ export default function CampaignDetail(props) {
   const handleClickDelete = (id) => {
     if(window.confirm(`Are you want delete `)) {
       const temp = tempVoucher.filter((e) => e.voucherSeriesId !== id)
-      setTempVoucher(temp)
-      
-            
+      setTempVoucher(temp) 
     }
-    
   };
 
   const handleRequestSort = (event, property) => {
@@ -292,14 +290,10 @@ export default function CampaignDetail(props) {
 
     }   else {
         alert("Vui lòng nhập đầy đủ thông tin");
-    }   
-      
+    } 
   }
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tempVoucher.length) : 0;
-
-  
-
-
+ 
   useEffect(() =>{
     if(props.load === true) {
         voucherService.VoucherAllByStore().then(
@@ -316,7 +310,7 @@ export default function CampaignDetail(props) {
         )
         gameService.GameAll().then(
             response => {
-                if(response.data && response.data.success) {
+                if(response.data && response.data.success ) {
                     const temp = response.data.data.games;
                     
                     setGames( temp)

@@ -207,7 +207,8 @@ export default function Voucher() {
         voucherService.PostVoucher(name, description).then(
           response => { 
             if(response.data && response.data.success) {
-              setSuccess(true)
+              alert("Create Success")
+              setSuccess(!success)
               setOpen(false);  
               clearScreen();    
             }
@@ -215,13 +216,15 @@ export default function Voucher() {
           }, error => {
             alert("Dữ liệu không hợp lệ")
             console.log("Error Submit",error)
+            setSuccess(!success)
           }
         )
       } else {
         voucherService.PutVoucherById(name, description, voucherId).then(
           response => { 
             if(response.data && response.data.success) {
-              setSuccess(true)
+              alert("Update Success")
+              setSuccess(!success)
               setOpen(false);  
               clearScreen();  
             }
@@ -229,6 +232,7 @@ export default function Voucher() {
           }, error => {
             alert("Dữ liệu không hợp lệ")
             console.log("Error Submit",error)
+            setSuccess(!success)
           }
         )
       }  

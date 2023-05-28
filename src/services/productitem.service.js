@@ -25,7 +25,7 @@ import headerService from "./header.service";
   );
   
   const DeleteProductItemById = (productItemId) => (
-    axios.delete(`${process.env.REACT_APP_API_URL}/ProductItem/${productItemId}`, {},{ 
+    axios.delete(`${process.env.REACT_APP_API_URL}/ProductItem/${productItemId}`, { 
       headers: headerService.accessToken()
   })
   );
