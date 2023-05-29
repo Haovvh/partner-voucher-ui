@@ -28,6 +28,12 @@ const verifyRegister = (otpValue, userId) =>(
         otpValue
     })
 );
+const verifyResetPassword = (userName, otp) =>(
+    axios.post(`${process.env.REACT_APP_API_URL}/Partner/VerifyResetPassword`,{
+        userName, otp
+    })
+);
+
 
 const login = (userName, password) => (
      axios.post(`${process.env.REACT_APP_API_URL}/Partner/Login`,{
@@ -89,7 +95,8 @@ const Logout = () => {
     ResetPassword,    
     VerifyResetPassword,
     PartnerInfo,
-    UpdatePartner
+    UpdatePartner,
+    verifyResetPassword
   }
 
 

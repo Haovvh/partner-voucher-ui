@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 
 // @mui
-import {   Stack, TextField, Link, Paper,styled, Grid  } from '@mui/material';
+import {   IconButton, InputAdornment, Stack, TextField, Link, Paper,styled,Grid  } from '@mui/material';
 
-
+import Box from '@mui/material/Box';
 import {Form, Button, Modal, Container} from 'react-bootstrap'
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
@@ -13,18 +13,18 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogContentText from '@mui/material/DialogContentText';
+
 // components
 import partnerService from '../services/partner.service';
-
-
+import headerService from '../services/header.service';
+import Iconify from '../components/iconify';
 import getService from '../services/getEnum.service'
 import Label from '../components/label';
 import { checkPassword } from '../utils/check';
 import { convertStringToDate } from '../utils/formatTime';
 
 // ----------------------------------------------------------------------
-
+const ALERT_PASSWORD = "Mật khẩu phải có chữ hoa, thường, số và lớn hơn 8 ký tự";
 
 export default function Profile() {
   
@@ -32,6 +32,7 @@ export default function Profile() {
     wardId:"",
     street:""
   })  
+  const [openResetPassword, setOpenResetPassword] = useState(false);
   const [name, setName] = useState("");
   const [genders, setGenders] = useState([]);
   const [gender, setGender] = useState("");
@@ -55,9 +56,7 @@ export default function Profile() {
   const [success, setSuccess] = useState(false)
   const [partnerTypes, setPartnerTypes] = useState([]);
   const [partnerType, setPartnerType] = useState("");
-  const [partners, setPartners] = useState([])
-
-  
+ 
   const [companyName, setCompanyName] = useState("")
   const [businessCode, setBusinessCode] = useState("")
   const [showCompany, setShowCompany] = useState(false);
@@ -68,7 +67,14 @@ export default function Profile() {
   const [wardsCompany, setWardsCompany] = useState([]);
   const [wardId, setWardId] = useState("");
   const [street, setStreet] = useState("");
-
+  const [showResetNewPassword, setShowResetNewPassword] = useState(false)
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState("");
+  const [openOtp, setOpenOtp] = useState("");
+  const [newResetPassword, setNewResetPassword] = useState("")
   const handleChangeCompanyWardId = (event) => {        
     setWardId(event.target.value)
     setStreet("")
@@ -79,9 +85,8 @@ export default function Profile() {
   const handleChangeDistrictCompanyId = (event) => {  
     getService.getAddressWardDistrictId(event.target.value).then(
       response =>{
-        if(response.status === 200 && response.data.data) {
-          
-          setWardsCompany(response.data.data.wards);
+        if(response.status === 200 && response.data.data) {          
+          setWardsCompany(response.data.data.wards);          
         }        
       }
     )
@@ -113,6 +118,16 @@ export default function Profile() {
       setShowCompany(false)
     }
   }
+  const handleChangeEmail = (event) => { 
+    setEmail(event.target.value)     
+ }
+ const handleChangeResetNewPassword = (event) => { 
+  setNewResetPassword(event.target.value)     
+}
+
+const handleChangeOtp = (event) => { 
+  setOtp(event.target.value)     
+}
   
 
   const handleChangeCompanyName = (event) => { 
@@ -123,7 +138,10 @@ export default function Profile() {
  }
   
   const handleClickCancel = () => {
-    setOpen(false)    
+    setOpen(false)   
+    setOpenOtp(false);
+    setOpenResetPassword(false)
+    clearScreen();
   }
 
   const handleChangeName = (event) => {        
@@ -152,6 +170,44 @@ export default function Profile() {
       street: ""
     }))
       
+  }
+  const handleClickSubmitOtp = () => {
+    partnerService.VerifyResetPassword(email,otp).then(
+      response => {
+        if(response.data && response.data.success === true) {
+          
+          alert("Update Password Success")
+          setOpenOtp(false)
+          setOtp(ALERT_PASSWORD);
+        } 
+      }, error => {
+        alert("Wrong OTP");
+        setSuccess(!success)
+      }
+    )
+  }
+  const handleClickSubmitResetPassword = () => {
+    if (email && newResetPassword ) {
+      if (checkPassword(newResetPassword) === true) {
+        partnerService.ResetPassword(email, newResetPassword).then(
+          response => {
+            if (response.data && response.data.success === true) {
+              console.log(response.data)
+              setOpenResetPassword(false);
+              setOpenOtp(true)
+            }
+          }, error => {
+            console.log(error)
+          }
+        )
+      } else {
+        alert("")
+      }
+      
+    } else {
+      alert("Vui lòng nhập thông tin đầy đủ");
+    }
+    
   }
   const handleChangeStreet = (event) => {        
     
@@ -184,7 +240,6 @@ export default function Profile() {
       wardId: "",
       street: ""
     })
-
   }
 
   const handleChangeDistrictId = (event) => {  
@@ -206,6 +261,14 @@ export default function Profile() {
   const handleChangeGender = (event) => {        
     setGender(event.target.value)
   }
+  const clearScreen = () => {
+    setNewPassword("");
+    setOldPassword("");
+    setConfirmPassword("");
+    setEmail("");
+    setNewResetPassword("");
+    setOldPassword("");
+  }
   
   const handleClickUpdate = () => {
     console.log(name, gender, dateOfBirth, address )
@@ -224,8 +287,9 @@ export default function Profile() {
           response => {
             if(response.data && response.data.success === true) {
               alert("Update Success");
-
             }
+          }, error => {
+            setSuccess(!success)
           }
         )
       } else {
@@ -235,6 +299,8 @@ export default function Profile() {
               alert("Update Success");
 
             }
+          }, error => {
+            setSuccess(!success)
           }
         )
       }
@@ -243,6 +309,11 @@ export default function Profile() {
       alert("Vui lòng nhập đầy đủ thông tin")
     }
   }
+
+  const handleClickResetPassword = () =>{
+    setOpenResetPassword(true);
+  }
+
   const handleClickChangePass = () => {
     setOpen(true)
   }
@@ -261,11 +332,11 @@ export default function Profile() {
                 setConfirmPassword("")
               }
             }, error => {
-              alert("Mật khẩu cũ không đúng")
+              setSuccess(!success)
             }
           )
         } else {
-          alert("Mật khẩu phải có chữ hoa, thường, số và lớn hơn 8 ký tự")
+          alert(ALERT_PASSWORD)
         }
         
       } else {
@@ -302,15 +373,14 @@ export default function Profile() {
     partnerService.PartnerInfo().then(
       response => {
         if (response.data && response.data.success === true) {
-          const temp = response.data.data
+          const temp = response.data.data.account
           console.log(temp)
           setName(temp.name)          
           setGender(temp.gender)
           setDateBirthDate(temp.dateOfBirth)
-          setDateOfBirthText(convertStringToDate(temp.dateOfBirth))
-          setDistrictId(temp.address.ward.district.id)
+          setDateOfBirthText(convertStringToDate(temp.dateOfBirth))          
           setProvineId(temp.address.ward.province.id )
-          
+          setPartnerType(temp.partnerType)
           getService.getAddressDistrictProvineId(temp.address.ward.province.id).then(
             response =>{
               if(response.status === 200 && response.data.data) {
@@ -330,7 +400,48 @@ export default function Profile() {
               } 
             }
           )
+          if (temp.partnerType === "Company") {
+            setShowCompany(true)
+            setCompanyName(temp.company.name)
+            setBusinessCode(temp.company.businessCode)
+            setProvineCompanyId(temp.company.address.ward.province.id)
+            getService.getAddressDistrictProvineId(temp.company.address.ward.province.id).then(
+              response =>{
+                if(response.status === 200 && response.data.data) {
+                  setDistrictsCompany(response.data.data.districts);
+                  setDistrictCompanyId(temp.company.address.ward.district.id)
+                  getService.getAddressWardDistrictId(temp.company.address.ward.district.id).then(
+                    response =>{
+                      if(response.status === 200 && response.data.data) {                      
+                        setWardsCompany(response.data.data.wards);
+                        setWardId(temp.company.address.ward.id);
+                        setStreet(temp.company.address.street)                        
+                      }        
+                    }
+                  )
+                } 
+              }
+            )
+          }
+          
         }
+      }, error => {
+        if(error.response && error.response.status === 401) {
+          console.log(error.response)
+          const token = headerService.refreshToken();
+          partnerService.refreshToken(token).then(
+            response => {
+              console.log(response.data)
+              if(response.data && response.data.success === true) {                
+                localStorage.setItem("token", JSON.stringify(response.data.data));
+                setSuccess(!success)
+              }
+            }, error => {
+              console.log(error)
+            }
+          )
+        }
+        
       }
     )
     getService.getValuesPartnerType().then(
@@ -348,228 +459,238 @@ export default function Profile() {
     <Helmet>
         <title> Profile  </title>
       </Helmet>
-    <Container xs={6}>
-    <Grid xs={12} container spacing={2}>
       
- 
-      <Grid item xs={7}>
-      <Label>FullName</Label>
-        <TextField 
-        name="name" 
-        fullWidth
-        value={name} 
-        required
-        onChange={(event) => { handleChangeName(event) }}
-        />      
-      </Grid>
-      <Grid item xs={5}>
-      <Label>DateOfBirth</Label>
-      <TextField 
-        fullWidth
-        type="date"       
-        value={dateOfBirthText} 
-        required
-        onChange={(event) => { handleChangeBirthDate(event) }}
-        />  
-      </Grid>
-      <Grid item xs={4}>
-      <Label>Gender</Label>
-      <TextField
-                  fullWidth
-                  select
-                  value={gender}
-                  id="country"        
-                  onChange= {handleChangeGender}
-                >
-                  {genders  && Array.isArray(genders) && genders.map((option) => (
-             <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          )
-          )}
-                  </TextField>       
-    </Grid>
-      <Grid item xs={8}>
-      <Label>Provine</Label>
-      <TextField
-                  fullWidth
-                  select
-                  value={provineId}
-                  id="country"       
-                  onChange= {handleChangeProvineId}
-                >
-                  {provines  && provines.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-          </TextField>      
-    </Grid>
-    <Grid item xs={6}>
-    <Label>District</Label>
-      <TextField
-                  fullWidth
-                  select
-                  value={districtId}
-                  id="country"         
-                  onChange= {handleChangeDistrictId}
-                >
-                  {districts  && districts.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-            </TextField>  
-    </Grid>
-    <Grid item xs={6}>
-    <Label>Ward</Label>
-      <TextField
-                  fullWidth
-                  select
-                  value={address.wardId}
-                  id="country"       
-                  onChange= {handleWardId}
-                >
-                  {wards  && wards.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-            </TextField>
-    </Grid>
-    <Grid item xs={8}>
-    <Label>Street</Label>
-        <TextField 
-        fullWidth
-        name="street" 
-        value={address.street} 
-        required
-        onChange={(event) => { handleChangeStreet(event) }}
-        />
-    </Grid>  
-    <Grid item xs={4}>
-    <Label>Partner Type</Label>
-        <TextField
-                  fullWidth
-                  select
-                  value={partnerType}
-                  id="country"    
-                  onChange= {handleChangeType}
-                >
-                  {partnerTypes && Array.isArray(partnerTypes)  && partnerTypes.map((option) => (
-             <MenuItem key={option} value={option}>
-              {option}
-            </MenuItem>
-          )
-          )}
-          </TextField>
-    </Grid>
 
-    {showCompany === true && 
-    <>
-    <Grid item xs={6}>
-      <Label>Company Name</Label>
-        <TextField 
-        fullWidth
-        name="companyname" 
+      <Box 
         
-        value={companyName} 
-        type="text"
-        required
-        onChange={(event) => { handleChangeCompanyName(event) }}
-        />
-      </Grid>
- 
-      <Grid item xs={6}>
-      <Label>BusinessCode</Label>
-        <TextField 
-        name="BusinessCode" 
-        fullWidth
-        value={businessCode} 
-        required
-        onChange={(event) => { handleChangeBusinessCode(event) }}
-        />      
-      </Grid>
-      <Grid item xs={6}>
-      <Label>Provine</Label>
-      <TextField
-                  fullWidth
-                  select
-                  value={provineCompanyId}
-                  id="country"       
-                  onChange= {handleChangeProvineCompanyId}
-                >
-                  {provinesCompany  && provinesCompany.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-          </TextField>      
-    </Grid>
-    <Grid item xs={6}>
-    <Label>District</Label>
-      <TextField
-                  fullWidth
-                  select
-                  value={districtCompanyId}
-                  id="country"         
-                  onChange= {handleChangeDistrictCompanyId}
-                >
-                  {districtsCompany  && districtsCompany.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-            </TextField>  
-    </Grid>
-    <Grid item xs={4}>
-    <Label>Ward</Label>
-      <TextField
-                  fullWidth
-                  select
-                  value={wardId}
-                  id="country"       
-                  onChange= {handleChangeCompanyWardId}
-                >
-                  {wardsCompany  && wardsCompany.map((option) => (
-             <MenuItem key={option.id} value={option.id}>
-              {option.name}
-            </MenuItem>
-          )
-          )}
-            </TextField>
-    </Grid>
-    <Grid item xs={8}>
-    <Label>Street</Label>
-        <TextField 
-        fullWidth
-        name="street" 
-        value={street} 
-        required
-        onChange={(event) => { handleChangeCompanyStreet(event) }}
-        />
-    </Grid>
-    </>
-    }    
-     
-    <Grid item xs={6} className="">
-    <LoadingButton  size="large" type="submit" variant="contained" onClick={handleClickUpdate}>
-        Update
-      </LoadingButton>
-    </Grid>   
-    <Grid item xs={6} className="">
-    <LoadingButton className='float-center' size="large" type="submit" variant="contained" onClick={handleClickChangePass}>
-        Change Password
-      </LoadingButton>
-    </Grid> 
+        sx={{ width: '50%' }}>
+          <Button onClick={handleClickResetPassword} className='float-end'>
+            ResetPassword
+          </Button>
+        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>     
+  
+          <Grid item xs={7}>  
+          <Label>FullName</Label>
+            <TextField 
+            name="name" 
+            fullWidth
+            value={name} 
+            required
+            onChange={(event) => { handleChangeName(event) }}
+            />      
+          </Grid>
+          <Grid item xs={5}>
+          <Label>DateOfBirth</Label>
+          <TextField 
+            fullWidth
+            type="date"       
+            value={dateOfBirthText} 
+            required
+            onChange={(event) => { handleChangeBirthDate(event) }}
+            />  
+          </Grid>
+          <Grid item xs={4}>
+          <Label>Gender</Label>
+          <TextField
+                      fullWidth
+                      select
+                      value={gender}
+                      id="country"        
+                      onChange= {handleChangeGender}
+                    >
+                      {genders  && Array.isArray(genders) && genders.map((option) => (
+                  <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              )
+              )}
+                      </TextField>       
+          </Grid>
+          <Grid item xs={8}>
+          <Label>Provine</Label>
+          <TextField
+                      fullWidth
+                      select
+                      value={provineId}
+                      id="country"       
+                      onChange= {handleChangeProvineId}
+                    >
+                      {provines  && provines.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                  {option.name}
+                </MenuItem>
+              )
+              )}
+              </TextField>      
+          </Grid>
+          <Grid item xs={6}>
+          <Label>District</Label>
+          <TextField
+                      fullWidth
+                      select
+                      value={districtId}
+                      id="country"         
+                      onChange= {handleChangeDistrictId}
+                    >
+                      {districts  && districts.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                  {option.name}
+                </MenuItem>
+              )
+              )}
+                </TextField>  
+          </Grid>
+          <Grid item xs={6}>
+          <Label>Ward</Label>
+          <TextField
+                      fullWidth
+                      select
+                      value={address.wardId}
+                      id="country"       
+                      onChange= {handleWardId}
+                    >
+                      {wards  && wards.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                  {option.name}
+                </MenuItem>
+              )
+              )}
+                </TextField>
+          </Grid>
+          <Grid item xs={8}>
+          <Label>Street</Label>
+            <TextField 
+            fullWidth
+            name="street" 
+            value={address.street} 
+            required
+            onChange={(event) => { handleChangeStreet(event) }}
+            />
+          </Grid>  
+          <Grid item xs={4}>
+          <Label>Partner Type</Label>
+            <TextField
+                      fullWidth
+                      select
+                      value={partnerType}
+                      id="country"    
+                      onChange= {handleChangeType}
+                    >
+                      {partnerTypes && Array.isArray(partnerTypes)  && partnerTypes.map((option) => (
+                  <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              )
+              )}
+              </TextField>
+          </Grid>
+
+          {showCompany === true && 
+          <>
+          <Grid item xs={6}>
+          <Label>Company Name</Label>
+            <TextField 
+            fullWidth
+            name="companyname" 
+            
+            value={companyName} 
+            type="text"
+            required
+            onChange={(event) => { handleChangeCompanyName(event) }}
+            />
+          </Grid>
+
+          <Grid item xs={6}>
+          <Label>BusinessCode</Label>
+            <TextField 
+            name="BusinessCode" 
+            fullWidth
+            value={businessCode} 
+            required
+            onChange={(event) => { handleChangeBusinessCode(event) }}
+            />      
+          </Grid>
+          <Grid item xs={6}>
+          <Label>Provine</Label>
+          <TextField
+                      fullWidth
+                      select
+                      value={provineCompanyId}
+                      id="country"       
+                      onChange= {handleChangeProvineCompanyId}
+                    >
+                      {provinesCompany  && provinesCompany.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                  {option.name}
+                </MenuItem>
+              )
+              )}
+              </TextField>      
+          </Grid>
+          <Grid item xs={6}>
+          <Label>District</Label>
+          <TextField
+                      fullWidth
+                      select
+                      value={districtCompanyId}
+                      id="country"         
+                      onChange= {handleChangeDistrictCompanyId}
+                    >
+                      {districtsCompany  && districtsCompany.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                  {option.name}
+                </MenuItem>
+              )
+              )}
+                </TextField>  
+          </Grid>
+          <Grid item xs={4}>
+          <Label>Ward</Label>
+          <TextField
+                      fullWidth
+                      select
+                      value={wardId}
+                      id="country"       
+                      onChange= {handleChangeCompanyWardId}
+                    >
+                      {wardsCompany  && wardsCompany.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                  {option.name}
+                </MenuItem>
+              )
+              )}
+                </TextField>
+          </Grid>
+          <Grid item xs={8}>
+          <Label>Street</Label>
+            <TextField 
+            fullWidth
+            name="street" 
+            value={street} 
+            required
+            onChange={(event) => { handleChangeCompanyStreet(event) }}
+            />
+          </Grid>
+          </>
+          }    
+
+          <Grid item xs={6} className="">
+          <LoadingButton  size="large" type="submit" variant="contained" onClick={handleClickUpdate}>
+            Update
+          </LoadingButton>
+          </Grid>   
+          <Grid item xs={6} className="">
+          <LoadingButton className='float-center' size="large" type="submit" variant="contained" onClick={handleClickChangePass}>
+            Change Password
+          </LoadingButton>
+          </Grid> 
+
+        </Grid>  
+      </Box>
     
-  </Grid>  
-    </Container>
+    
+  
+    
         
 
   <Dialog open={open} onClose={handleClose}>
@@ -584,8 +705,17 @@ export default function Profile() {
           name="password"          
           required
           value={oldPassword}
-          type="password"
-          onChange={(event) => { handleChangeOldPassword(event) }}          
+          type={showOldPassword ? 'text' : 'password'}
+          onChange={(event) => { handleChangeOldPassword(event) }}   
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowOldPassword(!showOldPassword)} edge="end">
+                  <Iconify icon={showOldPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}        
         />        
     </Grid>
         <Grid item xs={12}>
@@ -597,8 +727,17 @@ export default function Profile() {
           
           required
           value={newPassword}
-          type="password"
-          onChange={(event) => { handleChangeNewPassword(event) }}          
+          type={showNewPassword ? 'text' : 'password'}
+          onChange={(event) => { handleChangeNewPassword(event) }}   
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
+                  <Iconify icon={showNewPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}       
         />        
     </Grid>
     <Grid item xs={12}>
@@ -608,9 +747,17 @@ export default function Profile() {
           name="ConfirmPassword"
           required
           value={confirmPassword}
-          type='password'
+          type={showConfirmPassword ? 'text' : 'password'}
           onChange={(event) => { handleConfirmPassword(event) }}
-          
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                  <Iconify icon={showConfirmPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
     </Grid>
         </Grid>
@@ -619,6 +766,78 @@ export default function Profile() {
         <DialogActions>
           <Button className='btn btn-secondary' onClick={handleClickCancel}>Cancel</Button>
           <Button onClick={handleClickSubmit}>Submit</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openResetPassword} onClose={handleClose}>
+        <DialogTitle>Reset Password </DialogTitle>
+        <DialogContent>
+        <Grid container spacing={2}>
+        <Grid item xs={12}>
+        <Label>Email</Label>
+      <TextField
+      
+        fullWidth
+          name="email"          
+          required
+          value={email}
+          type="text"
+          onChange={(event) => { handleChangeEmail(event) }}   
+                
+        />        
+    </Grid>
+        <Grid item xs={12}>
+        <Label>New Password</Label>
+      <TextField
+      
+        fullWidth
+          name="password"          
+          required
+          value={newResetPassword}
+          type={showResetNewPassword ? 'text' : 'password'}
+          onChange={(event) => { handleChangeResetNewPassword(event) }}   
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowResetNewPassword(!showResetNewPassword)} edge="end">
+                  <Iconify icon={showResetNewPassword ? 'eva:eye-fill' : 'eva:eye-off-fill'} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}       
+        />        
+    </Grid>    
+        </Grid>
+        
+        </DialogContent>
+        <DialogActions>
+          <Button className='btn btn-secondary' onClick={handleClickCancel}>Cancel</Button>
+          <Button onClick={handleClickSubmitResetPassword}>Submit</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={openOtp} onClose={handleClose}>
+        <DialogTitle>Otp </DialogTitle>
+        <DialogContent>
+        <Grid container spacing={2}>
+        
+        
+      <Grid item xs={12}>
+      <Label>Otp</Label>
+        <TextField
+        fullWidth
+            name="otp"
+            required
+            value={otp}
+            type="text"
+            onChange={(event) => { handleChangeOtp(event) }}          
+          />
+      </Grid> 
+        </Grid>
+        
+        </DialogContent>
+        <DialogActions>
+          <Button className='btn btn-secondary' onClick={handleClickCancel}>Cancel</Button>
+          <Button onClick={handleClickSubmitOtp}>Submit</Button>
         </DialogActions>
       </Dialog>
       

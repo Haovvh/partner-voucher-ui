@@ -45,6 +45,7 @@ import getService from '../../services/getEnum.service'
 import headerService from '../../services/header.service';
 import voucherService from '../../services/voucher.service';   
 import gameService from '../../services/game.service';
+import partnerService from '../../services/partner.service';
 import { convertStringToDate } from '../../utils/formatTime';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
@@ -325,7 +326,7 @@ export default function EditCampaign(props) {
         response => {
           if(response.data && response.data.success === true) {
             const temp = response.data.data.campaign
-            console.log(temp)
+            
             setCampaignId(temp.id);
             setName(temp.name);
             setDescription(temp.description);
@@ -337,8 +338,6 @@ export default function EditCampaign(props) {
             
 
           }
-        }, error => {
-          console.log(error)
         }
       )
         voucherService.VoucherAllByStore().then(
@@ -349,8 +348,6 @@ export default function EditCampaign(props) {
                 setVouchers(response.data.data.voucherSeriesList)
                 setSuccess(false)
               }
-            }, error => {
-              console.log("Error voucherSeriesList ==>",error)
             }
         )
         gameService.GameAll().then(
@@ -358,14 +355,29 @@ export default function EditCampaign(props) {
                 if(response.data && response.data.success) {
                     const temp = response.data.data.games;                    
                     setGames( temp)
-                }
-                
+                }                
+            }, error => {
+              if(error.response && error.response.status === 401) {
+                console.log(error.response)
+                const token = headerService.refreshToken();
+                partnerService.refreshToken(token).then(
+                  response => {
+                    if(response.data && response.data.success === true) {                
+                      localStorage.setItem("token", JSON.stringify(response.data.data));
+                      setSuccess(!success)
+                    }
+                  }, error => {
+                    console.log(error)
+                  }
+                )
+              }
+              
             }
         )
     }
     
     
-  },[])
+  },[success])
 
   return (
     <>

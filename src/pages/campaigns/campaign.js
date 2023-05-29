@@ -121,9 +121,7 @@ export default function Campaign() {
 
   const [campaigns, setCampaigns] = useState([])
 
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const [voucherId, setVoucherId] = useState("");
+  const [rowsPerPage, setRowsPerPage] = useState(5);  
 
   const [openEnable, setOpenEnable] = useState(false);
 
@@ -247,15 +245,11 @@ export default function Campaign() {
   useEffect(() =>{
     CampaignService.CampaignAllByStore().then(
       response =>{
-        if(response.data  && response.data.success) {
-          console.log("campaignseriesList =>",response.data.data.listCampaign)
-
-          setCampaigns(response.data.data.listCampaign)
-          setSuccess(false)
+        if(response.data  && response.data.success) {          
+          setCampaigns(response.data.data.listCampaign)          
         }
       }, error => {
         if(error.response && error.response.status === 401) {
-          console.log(error.response)
           const token = headerService.refreshToken();
           partnerService.refreshToken(token).then(
             response => {

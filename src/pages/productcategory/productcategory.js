@@ -130,7 +130,7 @@ export default function ProductCategory() {
         }
         
       }, error => {
-        console.log(error)
+        setSuccess(!success);
       }
     )
     
@@ -157,11 +157,7 @@ export default function ProductCategory() {
     setFilterName(event.target.value);
     setSelected([]);
   };
-
-  const handleClickNew = () => {
-    setOpen(true);
-    
-  }
+  
   const handleClickCancel = () => {
     setOpen(false);
     clearScreen();
@@ -182,8 +178,7 @@ export default function ProductCategory() {
     productcategoryService.ProductCategoryAvalible().then(
       response =>{
         if(response.data  && response.data.success) {
-          console.log("productCategories =>",response.data.data.productCategories)
-
+          
           setProductCategorys(response.data.data.productCategories)
           setSuccess(false)
         }

@@ -305,6 +305,8 @@ export default function Store() {
               setSuccess(!success)
               clearScreen()
             }
+          }, error =>{
+            setSuccess(!success);
           }
         )
         
@@ -319,6 +321,8 @@ export default function Store() {
               clearScreen();
             }
             
+          }, error => {
+            setSuccess(!success);
           }
         )        
       }
@@ -343,7 +347,6 @@ export default function Store() {
               }
               
             }, error => {
-              console.log(error)
               setSuccess(!success)
             }
           )
@@ -359,7 +362,6 @@ export default function Store() {
               }
               
             }, error => {
-              console.log(error)
               setSuccess(!success)
             }
           )
@@ -416,8 +418,7 @@ export default function Store() {
         if(response.data && response.data.success ){     
           const array = [];
           array.push(response.data.data.store);
-          setStores(array)   
-            
+          setStores(array) 
         }
       }, error => {
         if(error.response && error.response.status === 401) {
@@ -425,7 +426,6 @@ export default function Store() {
           const token = headerService.refreshToken();
           partnerService.refreshToken(token).then(
             response => {
-              console.log(response.data)
               if(response.data && response.data.success === true) {                
                 localStorage.setItem("token", JSON.stringify(response.data.data));
                 setSuccess(!success)

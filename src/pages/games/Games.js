@@ -32,7 +32,6 @@ import Label from '../../components/label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
 
-   
 
 import gameService from '../../services/game.service';
 import headerService from '../../services/header.service';
@@ -140,7 +139,7 @@ export default function Game() {
           setOpen(true)
         }
       }, error => {
-        console.log(error)
+        setSuccess(!success);
       }
     )
   };
@@ -187,8 +186,7 @@ export default function Game() {
   useEffect(() =>{
     gameService.GameAll().then(
       response =>{
-        if( response.data && response.data.success && response.data.data) {
-          console.log("Game",response.data.data)
+        if( response.data && response.data.success && response.data.data) {          
           setGames(response.data.data.games)          
         }        
 

@@ -143,7 +143,7 @@ export default function Voucher() {
         }
         
       }, error => {
-        console.log(error)
+        setSuccess(!success)
       }
     )
     
@@ -159,6 +159,7 @@ export default function Voucher() {
           
         }, error => {
           alert("Dữ liệu đã tồn tại không thể xóa")
+          setSuccess(!success);
         }
       )
     }
@@ -215,7 +216,6 @@ export default function Voucher() {
             
           }, error => {
             alert("Dữ liệu không hợp lệ")
-            console.log("Error Submit",error)
             setSuccess(!success)
           }
         )
@@ -231,7 +231,6 @@ export default function Voucher() {
             
           }, error => {
             alert("Dữ liệu không hợp lệ")
-            console.log("Error Submit",error)
             setSuccess(!success)
           }
         )
@@ -239,8 +238,6 @@ export default function Voucher() {
     } else {
       alert("Vui lòng nhập đầy đủ thông tin")
     }
-      
-      
   }
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - vouchers.length) : 0;
 
@@ -250,11 +247,8 @@ export default function Voucher() {
   useEffect(() =>{
     voucherService.VoucherAllByStore().then(
       response =>{
-        if(response.data  && response.data.success) {
-          console.log("voucherSeriesList =>",response.data.data.voucherSeriesList)
-
-          setVouchers(response.data.data.voucherSeriesList)
-          setSuccess(false)
+        if(response.data  && response.data.success) { 
+          setVouchers(response.data.data.voucherSeriesList)          
         }
       }, error => {
         if(error.response && error.response.status === 401) {

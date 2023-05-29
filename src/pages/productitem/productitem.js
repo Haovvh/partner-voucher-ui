@@ -209,7 +209,7 @@ export default function ProductItem() {
         }
         
       }, error => {
-        console.log(error)
+        setSuccess(!success);
       }
     )
   };
@@ -283,7 +283,7 @@ export default function ProductItem() {
           }          
         }, error => {
           alert("Vui lòng kiểm tra dữ liệu")
-          console.log("Error Submit",error)
+          
           setSuccess(!success)
         }
       )
@@ -299,7 +299,7 @@ export default function ProductItem() {
           
         }, error => {
           alert("Vui lòng kiểm tra dữ liệu")
-          console.log("Error Submit",error)
+          
           setSuccess(!success)
         }
       )
@@ -325,8 +325,7 @@ export default function ProductItem() {
     )
     productitemService.ProductItemAllByStoreId().then(
       response =>{
-        if(response.data  && response.data.success) {
-          
+        if(response.data  && response.data.success) {          
           setProductItems(response.data.data.productItems)
         }
       }, error => {
