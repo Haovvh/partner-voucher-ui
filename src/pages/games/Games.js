@@ -49,7 +49,6 @@ const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
   { id: 'description', label: 'Description', alignRight: false },
   { id: 'instruction', label: 'Instruction', alignRight: false },
-  { id: 'imageUrl', label: 'Image', alignRight: false },
   { id: 'isEnable', label: 'Enable', alignRight: false },
   { id: '' }
 ];
@@ -106,7 +105,9 @@ export default function Game() {
   const [games, setGames] = useState([])
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [imageUrl, setImageUrl] = useState("/DummyImages/Games/lucky-wheel.jpg")
+
+  const [urlImage, setUrlImage] = useState("");
+  
 
   const handleChangeName = (event) => {
     setName(event.target.value) 
@@ -115,10 +116,7 @@ export default function Game() {
   const handlechangeInstruction = (event) => {
     setInstruction(event.target.value) 
   }
-  const handlechangeImageUrl = (event) => {
-    setImageUrl(event.target.value) 
-  }
-
+ 
   const handlechangeDescription = (event) => {
     setDescription(event.target.value) 
   }
@@ -135,14 +133,16 @@ export default function Game() {
           setName(temp.name);
           setDescription(temp.description)
           setInstruction(temp.instruction)
-          setImageUrl(temp.imageUrl);
           setOpen(true)
+          setUrlImage(`${process.env.REACT_APP_API_URL}${temp.imageUrl}`)
         }
       }, error => {
         setSuccess(!success);
       }
     )
   };
+  
+
   
 
   const handleRequestSort = (event, property) => {
@@ -176,6 +176,7 @@ export default function Game() {
     setName("");
     setDescription("");
     setInstruction("");
+    setUrlImage("");
   }
   
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - games.length) : 0;
@@ -243,7 +244,7 @@ export default function Game() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, description, instruction, imageUrl, isEnable } = row;
+                    const { id, name, description, instruction,  isEnable } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -254,9 +255,7 @@ export default function Game() {
 
                         <TableCell align="left">{description}</TableCell>
 
-                        <TableCell align="left">{instruction}</TableCell>
-
-                        <TableCell align="left">{imageUrl}</TableCell>
+                        <TableCell align="left">{instruction}</TableCell>   
 
                         <TableCell align="left">
                           {isEnable ? <Label color="success">{sentenceCase('Yes')}</Label>: 
@@ -352,15 +351,9 @@ export default function Game() {
         />  
         </Grid>
         <Grid xs={12}>
-        <Label>Image</Label>
-        <TextField 
-        name="imageUrl" 
-        value={imageUrl} 
-        fullWidth
-        disabled
-        onChange={(event) => { handlechangeImageUrl(event) }}
-        />  
-        </Grid>
+          <Label>Image</Label>          
+          {(urlImage !== "") && <img src={urlImage} alt="Trulli" width="550" height="333"/>}
+          </Grid>
         </Grid>
         
         </DialogContent>

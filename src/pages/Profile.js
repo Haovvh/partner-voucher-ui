@@ -73,7 +73,7 @@ export default function Profile() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otp, setOtp] = useState("");
   const [email, setEmail] = useState("");
-  const [openOtp, setOpenOtp] = useState("");
+  const [openOtp, setOpenOtp] = useState(false);
   const [newResetPassword, setNewResetPassword] = useState("")
   const handleChangeCompanyWardId = (event) => {        
     setWardId(event.target.value)

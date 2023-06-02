@@ -41,8 +41,8 @@ export default function Router() {
         { path: 'products', element: (isUser)? <ProductsPage /> :<PageRole/>},
         { path: 'store', element: (isUser)? <Store /> :<PageRole/>},
         { path: 'user', element: (isUser)? <User /> :<PageRole/>},
-        { path: 'logout', element: (isUser)? <Logout /> :<PageRole/>},
-        { path: 'profile', element: (isUser)? <Profile /> :<PageRole/>},
+        { path: 'logout', element:  <Logout /> },
+        { path: 'profile', element:  <Profile />},
       ],
     },
     {

@@ -253,7 +253,7 @@ export default function Campaign() {
           const token = headerService.refreshToken();
           partnerService.refreshToken(token).then(
             response => {
-              console.log(response.data && response.data.success === true)
+              
               if(response.data && response.data.success === true) {                
                 localStorage.setItem("token", JSON.stringify(response.data.data));
                 setSuccess(!success)

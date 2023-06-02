@@ -50,7 +50,7 @@ const CampaignAllByStore = (storeId = headerService.getUserId()) => (
   })
   );
 
-  const PutCampaignInfoByCampaignId = (campaignId, name,  description,  startDate,  endDate,  gameId,   winRate,   isEnable = true) => (
+  const PutCampaignInfoByCampaignId = (campaignId, name,  description,  startDate,  endDate,  gameId,   winRate, gameRule, numberOfLimit,   isEnable = true) => (
     axios.put(`${process.env.REACT_APP_API_URL}/Campaign/Info/${campaignId}`,{
       name,
       description,
@@ -58,6 +58,8 @@ const CampaignAllByStore = (storeId = headerService.getUserId()) => (
       endDate,
       gameId,
       winRate,
+      gameRule, 
+      numberOfLimit,
       isEnable
   }, { 
     headers: headerService.accessToken()

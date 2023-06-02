@@ -1,5 +1,8 @@
 import axios from "axios";
 
+const getValuesGameRule =  () => 
+    axios.get(`${process.env.REACT_APP_API_URL}/Values/GameRule`)
+
 const getValuesGender =  () => 
     axios.get(`${process.env.REACT_APP_API_URL}/Values/Gender`)
 
@@ -27,5 +30,6 @@ export default {
     getValuesUserType,
     getAddressDistrictProvineId,
     getAddressProvines,
-    getAddressWardDistrictId
+    getAddressWardDistrictId,
+    getValuesGameRule
 }

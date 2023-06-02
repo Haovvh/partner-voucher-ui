@@ -36,7 +36,7 @@ import Scrollbar from '../../components/scrollbar';
 
 
 
-   
+import imageService from '../../services/image.service';
 import productcategoryService from '../../services/productcategory.service';
 import productitemService from '../../services/productitem.service';
 import headerService from '../../services/header.service';
@@ -53,7 +53,6 @@ const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
   { id: 'description', label: 'Description', alignRight: false },  
   { id: 'price', label: 'Price', alignRight: false },
-  { id: 'imageUrl', label: 'Image', alignRight: false },  
   { id: 'productCategory', label: 'ProductCategory', alignRight: false },  
   { id: 'isEnable', label: 'Enable', alignRight: false },
   { id: '' },
@@ -122,10 +121,12 @@ export default function ProductItem() {
 
   const [productItemId, setProductItemId]  = useState("");
   
-  const [imageUrl, setImageUrl] = useState("/Image/ProductItem");
+  const [imageUrl, setImageUrl] = useState("");
 
   const [isEnable, setIsEnable] = useState("");
   const [openEnable, setOpenEnable] = useState(false);
+
+  const [urlImage, setUrlImage] = useState("");
 
   const handleClickEnable = (id) => {
     setProductItemId(id)
@@ -182,7 +183,29 @@ export default function ProductItem() {
     setProductCategoryId(event.target.value)
   }
   const handleChangeImageURL = (event) => {
-    setImageUrl(event.target.value)
+    const file = event.target.files[0];
+    console.log(file)
+    const formData = new FormData();
+    formData.append("file", file)
+    console.log("==>",formData)
+    imageService.ImageUpload(formData).then(
+      response =>{
+        if (response.data && response.data.success === true) {
+          const temp = response.data.data.imagePath
+          console.log(temp)
+          console.log(process.env.REACT_APP_API_URL)
+          setImageUrl(temp)
+          setUrlImage(`${process.env.REACT_APP_API_URL}${temp}`)
+        }
+         
+      }, error => {
+        console.log(error)
+      }
+    )
+    
+    
+    
+    
   }
 
   const handlechangeDescription = (event) => {
@@ -206,6 +229,7 @@ export default function ProductItem() {
           setPrice(temp.price)
           setProductCategoryId(temp.productCategory.id)
           setImageUrl(temp.imageUrl)
+          setUrlImage(`${process.env.REACT_APP_API_URL}${temp.imageUrl}`)
         }
         
       }, error => {
@@ -256,6 +280,7 @@ export default function ProductItem() {
     setOpen(true);
     
   }
+  
   const handleClickCancel = () => {
     setOpen(false);
     setOpenEnable(false)
@@ -267,43 +292,47 @@ export default function ProductItem() {
     setDescription("");
     setPrice(0);
     setProductCategoryId(0)
-    setImageUrl("/Image/ProductItem")
+    setImageUrl("")
+    setUrlImage("");
     setProductCategoryId("");
     setProductItemId("");
   }
   const handleClickSubmit = () => {
-    if(productItemId === "") {
-      productitemService.PostProductItem(name, description,productCategoryId, price).then(
-        response => {
-          if(response.data && response.data.success) {
-            alert("Create Success")
-            setSuccess(!success);          
-            clearInput();
-            setOpen(false);    
-          }          
-        }, error => {
-          alert("Vui lòng kiểm tra dữ liệu")
-          
-          setSuccess(!success)
-        }
-      )
-    } else {
-      productitemService.PutProductItemById(name, description, productCategoryId, price, imageUrl,  productItemId).then(
-        response => {
-          if(response.data && response.data.success) {
-            alert("Update Success")
-            setSuccess(!success);          
-            clearInput();
-            setOpen(false);    
+    if (name && description && productCategoryId && price && imageUrl) {
+      if(productItemId === "") {
+        productitemService.PostProductItem(name, description,productCategoryId, price, imageUrl).then(
+          response => {
+            if(response.data && response.data.success) {
+              alert("Create Success")
+              setSuccess(!success);          
+              clearInput();
+              setOpen(false);    
+            }          
+          }, error => {
+            alert("Vui lòng kiểm tra dữ liệu")
+            
+            setSuccess(!success)
           }
-          
-        }, error => {
-          alert("Vui lòng kiểm tra dữ liệu")
-          
-          setSuccess(!success)
-        }
-      )
+        )
+      } else {
+        productitemService.PutProductItemById(name, description, productCategoryId, price, imageUrl,  productItemId).then(
+          response => {
+            if(response.data && response.data.success) {
+              alert("Update Success")
+              setSuccess(!success);          
+              clearInput();
+              setOpen(false);    
+            }
+            
+          }, error => {
+            alert("Vui lòng kiểm tra dữ liệu")
+            
+            setSuccess(!success)
+          }
+        )
+      }
     }
+    
     
     
   }
@@ -383,7 +412,7 @@ export default function ProductItem() {
                 />
                 <TableBody>
                   {filteredDatas.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, description, price, imageUrl, productCategory, isEnable } = row;
+                    const { id, name, description, price,  productCategory, isEnable } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -395,8 +424,6 @@ export default function ProductItem() {
                         <TableCell align="left">{description}</TableCell>
 
                         <TableCell align="left">{price}</TableCell>
-
-                        <TableCell align="left">{imageUrl}</TableCell>
 
                         <TableCell align="left">{productCategory.name}</TableCell>
 
@@ -518,13 +545,12 @@ export default function ProductItem() {
           </Grid>
           <Grid xs={12}>
           <Label>Image</Label>
-            <TextField 
-              name="Image" 
-              value={imageUrl} 
-              fullWidth
-              required
-              onChange={(event) => { handleChangeImageURL(event) }}
-              />
+          <form encType='multipart/form-data'>
+            <input type="file" onChange={(event) => { handleChangeImageURL(event) }}/>          
+            
+          </form>
+          <br/>
+          {(urlImage !== "") && <img src={urlImage} alt="Trulli" width="550" height="333"/>}
           </Grid>
         </Grid>
         

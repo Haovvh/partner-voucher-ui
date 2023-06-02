@@ -51,7 +51,7 @@ import { convertStringToDate } from '../../utils/formatTime';
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 import CampaignService from '../../services/campaign.service';
 // mock
-
+import noti from '../../utils/noti';
 
 
 // ----------------------------------------------------------------------
@@ -68,6 +68,7 @@ const TABLE_HEAD = [
 // ----------------------------------------------------------------------
 
 
+const statusEnable = ["Enable             ", "Disable          "]
 
 
 
@@ -90,8 +91,10 @@ export default function EditCampaign(props) {
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
+  const [enable, setEnable ] = useState(false)
 
   const [vouchers, setVouchers] = useState([])
+  const [isEnable, setIsEnable] = useState("");
 
   const [descriptionVoucher, setDescriptionVoucher] = useState("");
 
@@ -117,6 +120,15 @@ export default function EditCampaign(props) {
 
   const [tempVoucher, setTempVoucher] = useState([]);
   const [campaignId, setCampaignId] = useState("");
+
+  const [gameRules, setGameRules] = useState([])
+  
+  const [gameRuleId, setGameRuleId] = useState("");
+
+  const [numberOfLimit, setNumberOfLimit] = useState("")
+
+  const [ishowNumberOfLimit, setIshowNumberOfLimit] = useState(false)
+
   
   const [isEdit, setIsEdit] = useState(false);
   const [expiresOn, setExpiresOn] = useState({
@@ -124,8 +136,7 @@ export default function EditCampaign(props) {
     month: 0,
     day: 0
   })
-
-  const isEnable = true;
+ 
   
   const handleChangeName = (event) => {
     setName(event.target.value) 
@@ -152,6 +163,19 @@ export default function EditCampaign(props) {
       day: tempExpiresOn[2]
     })
             
+  }
+
+  const handleChangeGameRule = (event) => {
+    if(event.target.value === 'Limit') {
+      setIshowNumberOfLimit(true);
+    } else {
+      setIshowNumberOfLimit(false)
+      setNumberOfLimit("");
+    }
+    setGameRuleId(event.target.value)
+  }
+  const handleChangeNumberOfLimit = (event) => {
+    setNumberOfLimit(event.target.value)
   }
 
   const handlechangeEndDate = (event) => {
@@ -183,19 +207,19 @@ export default function EditCampaign(props) {
   const handleClickDelete = (id) => {
     const voucherSeriesId = id
    
-    if(window.confirm(`Are you want delete `)) {
+    if(window.confirm(noti.CONFIRM_DELETE)) {
       console.log(campaignId, voucherSeriesId)      
       CampaignService.DeleteVoucherCampaign(campaignId, voucherSeriesId).then(
         response => {
           if(response.data && response.data.success === true) {
             const temp = response.data.data.campaignVoucherSeriesList;
-            console.log(response.data.data.campaignVoucherSeriesList)
-            
-            alert("Delete voucher Success")
+            console.log(response.data.data.campaignVoucherSeriesList)            
+            alert(noti.DELETE_SUCCESS)
             setTempVoucher(temp)
           } 
         } , error => {
-          alert("Có lỗi")
+          alert(noti.ERROR)
+          setSuccess(!success)
           console.log(error)
         }
       ) 
@@ -208,6 +232,16 @@ export default function EditCampaign(props) {
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
+
+  const handleChangeStatusEnable = (event) =>{
+    setIsEnable(event.target.value)
+    if (event.target.value === statusEnable[0]) {
+      setEnable(true)
+    } else {
+      setEnable(false)
+    }
+
+  }
 
   
   const handleChangePage = (event, newPage) => {
@@ -234,7 +268,7 @@ export default function EditCampaign(props) {
   }
   const handleClickCancel = () => {
     setOpen(false);
-    
+    clearScreen();
   }
   const clearScreen = () =>{
     setVoucherId("");
@@ -259,22 +293,22 @@ export default function EditCampaign(props) {
                 day: tempEndDate[2]
             }
             
-            CampaignService.PutCampaignInfoByCampaignId(campaignId, name, description, startDate, endDate, gameId, winRate).then(
+            CampaignService.PutCampaignInfoByCampaignId(campaignId, name, description, startDate, endDate, gameId, winRate, gameRuleId, numberOfLimit, enable).then(
                 response => {
-                    if(response.data && response.data.success) {
-                        alert("Update Sucess")
+                    if(response.data && response.data.success === true) {
+                        alert(noti.EDIT_SUCCESS)
                         
                     }
                 }, error => {
-                    alert("Dữ liệu không hợp lệ")
+                    alert(noti.ERROR)
                 }
             )
         } else {
-            alert("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
+            alert(noti.WRONG_DATE_FROM_TO)
         }
         
     } else {
-        alert("Vui lòng nhập đủ thông tin")
+        alert(noti.MISSING_DATA)
     }
     
   }
@@ -287,12 +321,13 @@ export default function EditCampaign(props) {
               if(response.data && response.data.success === true) {
                 const temp = response.data.data.campaignVoucherSeriesList;
                 setTempVoucher(temp)
-                alert("Update Voucher Success")
+                
+                alert(noti.EDIT_SUCCESS)
                 setOpen(false)
                 clearScreen();
               }
             }, error => {
-              alert("Có lỗi")
+              alert(noti.ERROR)
             }
           )
         } else {
@@ -302,18 +337,18 @@ export default function EditCampaign(props) {
               if(response.data && response.data.success === true) {
                 const temp = response.data.data.campaignVoucherSeriesList;
                 setTempVoucher(temp)
-                alert("Create Voucher Success")
+                alert(noti.CREATE_SUCCESS)
                 setOpen(false)
                 clearScreen();
               }
             }, error => {
-              alert("Có lỗi")
+              alert(noti.ERROR)
             }
           )
         }
                 
     }   else {
-        alert("Vui lòng nhập đầy đủ thông tin");
+        alert(noti.MISSING_DATA);
     }   
       
   }
@@ -322,11 +357,19 @@ export default function EditCampaign(props) {
 
   useEffect(() =>{
     if(props.editDisplay === true && props.campaignIdText) {
+      getService.getValuesGameRule().then(
+        response => {
+          if(response.data && response.data.success === true) {
+            const tempGameRule= response.data.data.gameRuleValue
+            setGameRules(tempGameRule)
+          }
+        }
+      )
       CampaignService.GetCampaignById(props.campaignIdText).then(
         response => {
           if(response.data && response.data.success === true) {
             const temp = response.data.data.campaign
-            
+            console.log(temp)
             setCampaignId(temp.id);
             setName(temp.name);
             setDescription(temp.description);
@@ -335,8 +378,18 @@ export default function EditCampaign(props) {
             setGameId(temp.gameId)
             setTempVoucher(temp.campaignVoucherList)
             setWinRate(temp.winRate)
-            
-
+            setGameRuleId(temp.gameRule)
+            if(temp.isEnable === true) {
+              setEnable(true)
+              setIsEnable(statusEnable[0])
+            } else {
+              setEnable(false)
+              setIsEnable(statusEnable[1])
+            }
+            if(temp.numberOfLimit) {
+              setNumberOfLimit(temp.numberOfLimit);
+              setIshowNumberOfLimit(true)
+            }
           }
         }
       )
@@ -440,7 +493,7 @@ export default function EditCampaign(props) {
                 onChange={(event) => { handlechangeDescription(event) }}
                 />
             </Grid>
-            <Grid xs={4}>
+            <Grid xs={3}>
             <Label>Game </Label>
             <TextField
                   fullWidth
@@ -458,7 +511,7 @@ export default function EditCampaign(props) {
           )}
             </TextField>
             </Grid>
-            <Grid xs={4}>
+            <Grid xs={2}>
                 <Label>WinRate </Label>
                 <TextField 
                 name="WinRate" 
@@ -470,6 +523,58 @@ export default function EditCampaign(props) {
                 onChange={(event) => { handleChangeWinRate(event) }}
                 />
             </Grid>
+            <Grid xs={2}>
+            <Label>Enable </Label>
+            <TextField
+                  fullWidth
+                  select
+                  variant="outlined"
+                  value={isEnable}
+                  id="country"      
+                  onChange= {handleChangeStatusEnable}
+                >
+                  {statusEnable  && statusEnable.map((option) => (
+             <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          )
+          )}
+            </TextField>
+            </Grid>
+            <Grid xs={2}>
+            <Label>GameRule </Label>
+            <TextField
+                  fullWidth
+                  select
+                  variant="outlined"
+                  value={gameRuleId}
+                  id="country"      
+                  onChange= {handleChangeGameRule}
+                >
+                  {gameRules  && gameRules.map((option) => (
+             <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          )
+          )}
+            </TextField>
+            
+            </Grid>
+            {ishowNumberOfLimit && 
+            <Grid xs={2}>
+                <Label>NumberOfLimit </Label>
+                <TextField 
+                name="numberOfLimit" 
+                type="number"
+                
+                value={numberOfLimit} 
+                fullWidth
+                required
+                onChange={(event) => { handleChangeNumberOfLimit(event) }}
+                />
+            </Grid>
+            }
+            
         </Grid>
         <br/>
         <Grid>

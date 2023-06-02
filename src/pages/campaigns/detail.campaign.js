@@ -41,15 +41,16 @@ import Scrollbar from '../../components/scrollbar';
 import headerService from '../../services/header.service';
 import partnerService from '../../services/partner.service';
 
-import getService from '../../services/getEnum.service'
 import voucherService from '../../services/voucher.service';   
 import gameService from '../../services/game.service';
+
 
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 import CampaignService from '../../services/campaign.service';
 // mock
 import { checkWinRate } from '../../utils/check';
+import getEnumService from '../../services/getEnum.service';
 
 
 // ----------------------------------------------------------------------
@@ -118,7 +119,16 @@ export default function CampaignDetail(props) {
   const [isEnable, setIsEnable] = useState("");
 
   const [enable, setEnable ] = useState(false)
+
+  const [gameRules, setGameRules] = useState([])
   
+  const [gameRuleId, setGameRuleId] = useState("");
+
+  const [numberOfLimit, setNumberOfLimit] = useState("")
+
+  const [ishowNumberOfLimit, setIshowNumberOfLimit] = useState(false)
+
+  const [voucherIdEdit, setVoucherIdEdit] = useState("")
 
   const handleChangeName = (event) => {
     setName(event.target.value) 
@@ -143,6 +153,18 @@ export default function CampaignDetail(props) {
   const handlechangeEndDate = (event) => {
     setEndDateText(event.target.value) 
   }
+  const handleChangeGameRule = (event) => {
+    if(event.target.value === 'Limit') {
+      setIshowNumberOfLimit(true);
+    } else {
+      setIshowNumberOfLimit(false)
+      setNumberOfLimit("");
+    }
+    setGameRuleId(event.target.value)
+  }
+  const handleChangeNumberOfLimit = (event) => {
+    setNumberOfLimit(event.target.value)
+  }
 
   const handleChangeStatusEnable = (event) =>{
     setIsEnable(event.target.value)
@@ -165,25 +187,19 @@ export default function CampaignDetail(props) {
   const handleClose = () => {
     setOpen(false)    
   }
-  const handleClickEdit = (id) => {
+  const handleClickEdit = (id) => {    
+    const temp = tempVoucher.filter(e=> e.voucherSeriesId === id)
     
-    voucherService.GetVoucherById(id).then(
-      response => { 
-        
-        if (response.data && response.data.success) {
-          const temp = response.data.data.voucherSeries
-          setOpen(true)
-          setVoucherId(temp.id);
-          setName(temp.name);
-          setDescription(temp.description)
-                    
-        }
-        
-      }, error => {
-        console.log(error)
-        setSuccess(!success)
-      }
-    )
+    console.log(temp[0])
+    setOpen(true)
+    setVoucherId(temp[0].voucherSeriesId);
+    setVoucherIdEdit(temp[0].voucherSeriesId)    
+    setNameVoucher(temp[0].name)
+    setDescriptionVoucher(temp[0].description);
+    setExpiresOnText(`${temp[0].expiresOn.year}-${temp[0].expiresOn.month}-${temp[0].expiresOn.day}`)
+    
+    setQuantityText(temp[0].quantity)
+    
     
   };
   const handleClickDelete = (id) => {
@@ -224,7 +240,7 @@ export default function CampaignDetail(props) {
   }
   const handleClickCancel = () => {
     setOpen(false);
-    
+    clearScreen();
   }
   const clearScreen = () =>{
     setVoucherId("");
@@ -256,7 +272,9 @@ export default function CampaignDetail(props) {
                 endDate,
                 gameId,
                 isEnable: enable,
-                winRate
+                winRate,
+                gameRule: gameRuleId,
+                numberOfLimit                
             }
             const campaignVoucherSeriesList = tempVoucher
             CampaignService.PostCampaign(campaignInfo, campaignVoucherSeriesList).then(
@@ -286,11 +304,30 @@ export default function CampaignDetail(props) {
   const handleClickSubmit = () => {
     
     if(voucherId && descriptionVoucher && expiresOnText && quantityText > 0) {
-        
-        const checkVoucherId = tempVoucher.filter(option => option.voucherSeriesId === voucherId).length
+        if (voucherId === voucherIdEdit) {
+          const tempvoucherEdit = tempVoucher.filter(option => option.voucherSeriesId !== voucherId) 
+          console.log(tempvoucherEdit)
+          const tempExpiresOn = expiresOnText.split("-");
+          setTempVoucher([...tempvoucherEdit, {
+            voucherSeriesId: voucherId,
+            name: nameVoucher,
+            description: descriptionVoucher,
+            quantity: parseInt(quantityText,10),
+            expiresOn: {
+                year: tempExpiresOn[0],
+                month: tempExpiresOn[1],
+                day: tempExpiresOn[2]
+            },
+            
+        }])
+        setOpen(false)
+        clearScreen();
+        } else {
+          const checkVoucherId = tempVoucher.filter(option => option.voucherSeriesId === voucherId).length
         if(checkVoucherId === 0) {
+            const tempEditVoucher = tempVoucher.filter(option => option.voucherSeriesId !== voucherIdEdit)
             const tempExpiresOn = expiresOnText.split("-");
-            setTempVoucher([...tempVoucher, {
+            setTempVoucher([...tempEditVoucher, {
                 voucherSeriesId: voucherId,
                 name: nameVoucher,
                 description: descriptionVoucher,
@@ -308,7 +345,7 @@ export default function CampaignDetail(props) {
             alert("Voucher đã tồn tại")
             setSuccess(!success);
         }
-        
+        }    
 
     }   else {
       alert("Vui lòng nhập đầy đủ thông tin");
@@ -343,6 +380,14 @@ export default function CampaignDetail(props) {
               }
               
             }
+        )
+        getEnumService.getValuesGameRule().then(
+          response => {
+            if(response.data && response.data.success === true) {
+              const tempGameRule= response.data.data.gameRuleValue
+              setGameRules(tempGameRule)
+            }
+          }
         )
         gameService.GameAll().then(
             response => {
@@ -419,7 +464,7 @@ export default function CampaignDetail(props) {
                 onChange={(event) => { handlechangeDescription(event) }}
                 />
             </Grid>
-            <Grid xs={4}>
+            <Grid xs={3}>
             <Label>Game </Label>
             <TextField
                   fullWidth
@@ -437,7 +482,7 @@ export default function CampaignDetail(props) {
           )}
             </TextField>
             </Grid>
-            <Grid xs={4}>
+            <Grid xs={2}>
                 <Label>WinRate </Label>
                 <TextField 
                 name="WinRate" 
@@ -449,10 +494,9 @@ export default function CampaignDetail(props) {
                 onChange={(event) => { handleChangeWinRate(event) }}
                 />
             </Grid>
-            <Grid xs={3}>
+            <Grid xs={2}>
             <Label>Enable </Label>
             <TextField
-                  label="Status"
                   fullWidth
                   select
                   variant="outlined"
@@ -468,6 +512,39 @@ export default function CampaignDetail(props) {
           )}
             </TextField>
             </Grid>
+            <Grid xs={2}>
+            <Label>GameRule </Label>
+            <TextField
+                  fullWidth
+                  select
+                  variant="outlined"
+                  value={gameRuleId}
+                  id="country"      
+                  onChange= {handleChangeGameRule}
+                >
+                  {gameRules  && gameRules.map((option) => (
+             <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          )
+          )}
+            </TextField>
+            
+            </Grid>
+            {ishowNumberOfLimit && 
+            <Grid xs={2}>
+                <Label>NumberOfLimit </Label>
+                <TextField 
+                name="numberOfLimit" 
+                type="number"
+                
+                value={numberOfLimit} 
+                fullWidth
+                required
+                onChange={(event) => { handleChangeNumberOfLimit(event) }}
+                />
+            </Grid>
+            }
         </Grid>
         <br/>
         <Grid>

@@ -48,7 +48,7 @@ import USERLIST from '../../_mock/user';
 import { convertStringToTime } from '../../utils/formatTime';
 import headerService from '../../services/header.service';
 import partnerService from '../../services/partner.service';
-
+import imageService from '../../services/image.service';
 
 // ----------------------------------------------------------------------
 
@@ -100,6 +100,8 @@ const statusEnable = ["Enable             ", "Disable          "]
 
 export default function Store() {  
 
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [urlImage, setUrlImage] = useState("");
   const [stores, setStores] = useState([])
   const [openTime, setOpenTime] = useState({
     hour: 0,
@@ -165,6 +167,25 @@ export default function Store() {
     setAddress(prevState => ({ ...prevState,
       street:event.target.value}))
   }
+
+  const handleChangeImageURL = (event) => {
+    const file = event.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file)
+    console.log("==>",formData)
+    imageService.ImageUpload(formData).then(
+      response =>{
+        if (response.data && response.data.success === true) {
+          const temp = response.data.data.imagePath
+          setBannerUrl(temp)
+          setUrlImage(`${process.env.REACT_APP_API_URL}${temp}`)
+        }
+         
+      }, error => {
+        console.log(error)
+      }
+    )  
+  }
   const handleChangeProvineId = (event) => { 
      
     getService.getAddressDistrictProvineId(event.target.value).then(
@@ -195,6 +216,8 @@ export default function Store() {
         if(response.data && response.data.success === true) {
           const temp = response.data.data.store
           console.log(temp)
+          setBannerUrl(temp.bannerUrl);
+          setUrlImage(`${process.env.REACT_APP_API_URL}${temp.bannerUrl}`)
           setOpen(true)
           setStoreId(temp.id)
           setName(temp.name)
@@ -336,7 +359,7 @@ export default function Store() {
     if(name && description && provineId && districtId  && address && openTimeText && closeTimeText) {
       if(openTime <= closeTime) {
         if(storeId === "") {
-          storeService.StoreRegister(name,description,address,openTime,closeTime).then(
+          storeService.StoreRegister(name,description,address,openTime,closeTime, bannerUrl).then(
             response => {
               console.log(response)
               if(response.data &&  response.data.success) {
@@ -351,7 +374,7 @@ export default function Store() {
             }
           )
         } else {
-          storeService.PutStore(name,description,address,openTime,closeTime).then(
+          storeService.PutStore(name, description, address, openTime, closeTime, bannerUrl).then(
             response => {
               console.log(response)
               if(response.data &&  response.data.success) {
@@ -394,9 +417,7 @@ export default function Store() {
       hour:parseInt(timeText[0],10),
       minute:parseInt(timeText[1], 10)
     }))
-  }
-
-  
+  } 
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - stores.length) : 0;
 
@@ -575,7 +596,6 @@ export default function Store() {
           <Label>Description</Label>
             <TextField 
               name="description" 
-              label="Description" 
               value={description} 
               fullWidth
               required
@@ -667,6 +687,15 @@ export default function Store() {
             required
             onChange={(event) => { handleChangeCloseTime(event) }}
             />
+          </Grid>
+          <Grid xs={12}>
+          <Label>Image</Label>
+          <form encType='multipart/form-data'>
+            <input type="file" onChange={(event) => { handleChangeImageURL(event) }}/>          
+            
+          </form>
+          <br/>
+          {(urlImage !== "") && <img src={urlImage} alt="Trulli" width="550" height="333"/>}
           </Grid>
         </Grid> 
         </DialogContent>
