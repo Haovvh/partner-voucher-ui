@@ -44,7 +44,7 @@ import partnerService from '../../services/partner.service';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
-
+import noti from '../../utils/noti';
 
 
 // ----------------------------------------------------------------------

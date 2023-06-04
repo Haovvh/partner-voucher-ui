@@ -31,7 +31,7 @@ import searchPartner from '../../utils/searchPartner';
 import gameService from '../../services/game.service';
 import headerService from '../../services/header.service';
 import partnerService from '../../services/partner.service';
-
+import noti from '../../utils/noti';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [

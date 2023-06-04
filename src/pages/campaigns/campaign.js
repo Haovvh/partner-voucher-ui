@@ -52,6 +52,7 @@ import EditCampaign from './edit.campaign';
 import CampaignDetail from './detail.campaign';
 import headerService from '../../services/header.service';
 import partnerService from '../../services/partner.service';
+import noti from '../../utils/noti';
 
 // ----------------------------------------------------------------------
 

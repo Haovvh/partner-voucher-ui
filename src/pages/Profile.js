@@ -22,7 +22,7 @@ import getService from '../services/getEnum.service'
 import Label from '../components/label';
 import { checkPassword } from '../utils/check';
 import { convertStringToDate } from '../utils/formatTime';
-
+import noti from '../utils/noti';
 // ----------------------------------------------------------------------
 const ALERT_PASSWORD = "Mật khẩu phải có chữ hoa, thường, số và lớn hơn 8 ký tự";
 
