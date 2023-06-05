@@ -138,11 +138,11 @@ export default function Campaign() {
     
   };
   const handleClickDelete = (id) => {
-    if(window.confirm(`Are you want delete `)) {
+    if(window.confirm(noti.CONFIRM_DELETE)) {
       CampaignService.DeleteCampaignById(id).then(
         response => { 
           if (response.data && response.data.success) {
-            alert("Delete Success")
+            alert(noti.DELETE_SUCCESS)
             setSuccess(!success);
           }
           
@@ -177,12 +177,12 @@ export default function Campaign() {
         CampaignService.CampaignEnableByCampaignId(campaignId).then(
           response => {
             if(response.data  && response.data.success) {
-              alert("Enable Campaign success");
+              alert(noti.ENABLE_SUCCESS);
               setOpenEnable(false)
               setSuccess(!success)
             }
           } , error => {
-            alert("Có lỗi")
+            alert(noti.ERROR)
             setSuccess(!success)
           }
         )
@@ -192,19 +192,19 @@ export default function Campaign() {
         CampaignService.CampaignDisableByCampaignId(campaignId).then(
           response => {
             if(response.data  && response.data.success) {
-              alert("Disable Campaign success");
+              alert(noti.DISABLE_SUCCESS);
               setOpenEnable(false)
               setSuccess(!success)
             }
             
           }, error => {
-            alert("Có lỗi")
+            alert(noti.ERROR)
             setSuccess(!success)
           }
         )        
       }
     } else {
-      alert("Please choose Status");
+      alert(noti.CONFIRM_CHOOSE_STATUS);
     }
   }
 

@@ -33,7 +33,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import axios from 'axios';
+
 // components
 import Label from '../../components/label';
 import Iconify from '../../components/iconify';

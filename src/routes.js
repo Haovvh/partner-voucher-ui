@@ -11,7 +11,6 @@ import RegisterPage from './pages/RegisterPage';
 import Page404 from './pages/Page404';
 import ProductCategory from './pages/productcategory/productcategory';
 import ProductItem from './pages/productitem/productitem';
-import ProductsPage from './pages/product/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import Game from './pages/games/Games';
 import Voucher from './pages/vouchers/Voucher';
@@ -19,7 +18,7 @@ import Campaign from './pages/campaigns/campaign';
 import Service from './services/header.service';
 import PageRole from './pages/PageRole';
 import Store from './pages/store/Stores';
-import User from './pages/user/Users';
+import Report from './pages/report/report';
 
 
 // ----------------------------------------------------------------------
@@ -38,9 +37,8 @@ export default function Router() {
         { path: 'campaign', element: (isUser)? <Campaign /> :<PageRole/>},
         { path: 'productcategory', element: (isUser)? <ProductCategory /> :<PageRole/>},
         { path: 'productitem', element: (isUser)? <ProductItem /> :<PageRole/>},
-        { path: 'products', element: (isUser)? <ProductsPage /> :<PageRole/>},
         { path: 'store', element: (isUser)? <Store /> :<PageRole/>},
-        { path: 'user', element: (isUser)? <User /> :<PageRole/>},
+        { path: 'report', element: (isUser)? <Report /> :<PageRole/>},
         { path: 'logout', element:  <Logout /> },
         { path: 'profile', element:  <Profile />},
       ],

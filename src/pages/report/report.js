@@ -76,7 +76,7 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function User() {  
+export default function Report() {  
 
   const [page, setPage] = useState(0);
 

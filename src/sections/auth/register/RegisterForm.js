@@ -247,12 +247,12 @@ export default function RegisterForm() {
                   }
                   
                 }, error =>{
-                  alert("Dữ liệu không phù hợp")
+                  alert(noti.ERROR)
                 }
               )
 
           } else {
-            alert("Vui lòng nhập đủ thông tin");
+            alert(noti.MISSING_DATA);
           }
         } else {
           partner.register( userName, password, name, gender, dateOfBirth, address, partnerType
@@ -269,17 +269,17 @@ export default function RegisterForm() {
                 }
                 
               }, error =>{
-                alert("Dữ liệu không phù hợp")
+                alert(noti.ERROR)
               }
             )
         }
         
       } else{
-        alert("Vui lòng nhập đầy đủ thông tin")
+        alert(noti.MISSING_DATA)
       }
       
     } else {
-      alert("Password and ConfirmPassword are not the same");
+      alert(noti.SAMP_PASSWORD);
     }    
       
   };

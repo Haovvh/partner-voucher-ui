@@ -6,6 +6,7 @@ import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
 import service from '../../../services/partner.service'
+import noti from '../../../utils/noti';
 
 // ----------------------------------------------------------------------
 
@@ -38,11 +39,11 @@ export default function LoginForm() {
           console.log(response.data);
           
         }, error =>{
-          alert("Wrong. Please Check Username and Password")
+          alert(noti.CHECK_LOGIN)
         }
       )
     } else {
-      alert("Please Input Username and Password")
+      alert(noti.MISSING_DATA)
     }
     
     

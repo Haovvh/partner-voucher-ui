@@ -203,7 +203,7 @@ export default function CampaignDetail(props) {
     
   };
   const handleClickDelete = (id) => {
-    if(window.confirm(`Are you want delete `)) {
+    if(window.confirm(noti.CONFIRM_DELETE)) {
       const temp = tempVoucher.filter((e) => e.voucherSeriesId !== id)
       setTempVoucher(temp) 
     }
@@ -280,23 +280,23 @@ export default function CampaignDetail(props) {
             CampaignService.PostCampaign(campaignInfo, campaignVoucherSeriesList).then(
                 response => {
                     if(response.data && response.data.success) {
-                        alert("Create Sucess")
+                        alert(noti.CREATE_SUCCESS)
                         window.location.assign('/campaign')
                     }
                 }, error => {
-                    alert("Dữ liệu không hợp lệ")
+                    alert(noti.WRONG_DATA)
                     setSuccess(!success);
                 }
             )
         } else {
-            alert("Ngày bắt đầu phải nhỏ hơn ngày kết thúc")
+            alert(noti.WRONG_DATE_FROM_TO)
         }
         } else {
-          alert("WinRate >= 1 && WinRate <= 100")
+          alert(noti.CHECK_WINRATE)
         }
         
     } else {
-        alert("Vui lòng nhập đủ thông tin")
+        alert(noti.MISSING_DATA)
     }
     
   }
@@ -342,13 +342,13 @@ export default function CampaignDetail(props) {
             setOpen(false)
             clearScreen();
         } else {
-            alert("Voucher đã tồn tại")
+            alert(noti.WRONG_VOUCHER)
             setSuccess(!success);
         }
         }    
 
     }   else {
-      alert("Vui lòng nhập đầy đủ thông tin");
+      alert(noti.MISSING_DATA);
     } 
   }
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tempVoucher.length) : 0;

@@ -33,8 +33,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Label from '../../components/label';
 import Iconify from '../../components/iconify';
 import Scrollbar from '../../components/scrollbar';
-import display from '../../utils/alert';
-
 
 import getService from '../../services/getEnum.service'
    
@@ -44,7 +42,7 @@ import storeService from '../../services/store.service';
 // sections
 import { UserListHead, UserListToolbar } from '../../sections/@dashboard/user';
 // mock
-import USERLIST from '../../_mock/user';
+
 import { convertStringToTime } from '../../utils/formatTime';
 import headerService from '../../services/header.service';
 import partnerService from '../../services/partner.service';
@@ -172,7 +170,6 @@ export default function Store() {
     const file = event.target.files[0];
     const formData = new FormData();
     formData.append("file", file)
-    console.log("==>",formData)
     imageService.ImageUpload(formData).then(
       response =>{
         if (response.data && response.data.success === true) {
@@ -252,7 +249,7 @@ export default function Store() {
           )
         }
       }, error => {
-        alert("Dữ liệu không hợp lệ")
+        alert(noti.ERROR)
         setSuccess(!success)
       }
     )    
@@ -323,7 +320,7 @@ export default function Store() {
         storeService.StoreEnableStoreId().then(
           response => {
             if(response.data  && response.data.success === true) {
-              alert("Enable Store success");
+              alert(noti.ENABLE_SUCCESS);
               setOpenEnable(false)
               setSuccess(!success)
               clearScreen()
@@ -338,7 +335,7 @@ export default function Store() {
         storeService.StoreDisableStoreId().then(
           response => {
             if(response.data  && response.data.success === true) {
-              alert("Disable Store success");
+              alert(noti.DISABLE_SUCCESS);
               setOpenEnable(false)
               setSuccess(!success)
               clearScreen();
@@ -350,7 +347,7 @@ export default function Store() {
         )        
       }
     } else {
-      alert("Please choose Status");
+      alert(noti.CONFIRM_CHOOSE_STATUS);
     }
   }
 
@@ -363,7 +360,7 @@ export default function Store() {
             response => {
               console.log(response)
               if(response.data &&  response.data.success) {
-                alert(display.SUCCESS_STORE)   
+                alert(noti.CREATE_SUCCESS)   
                 setOpen(false);  
                 setSuccess(!success)
                 clearScreen();          
@@ -378,7 +375,7 @@ export default function Store() {
             response => {
               console.log(response)
               if(response.data &&  response.data.success) {
-                alert(display.UPDATE_STORE)   
+                alert(noti.EDIT_SUCCESS)   
                 setOpen(false);  
                 setSuccess(!success)     
                 clearScreen();    
@@ -391,10 +388,10 @@ export default function Store() {
         }
         
       } else {
-        alert("OpenTime < CloseTime")
+        alert(noti.CHECK_HOUR)
       }
     } else {
-      alert("Please Write All Input")
+      alert(noti.MISSING_DATA)
     }      
   }
   const handleChangeOpenTime = (event) => {    
