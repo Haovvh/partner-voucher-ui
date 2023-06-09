@@ -1,4 +1,4 @@
-FROM node AS build
+FROM node:alpine AS build
 WORKDIR /app
 COPY package.json ./
 RUN npm install
@@ -6,7 +6,8 @@ COPY . .
 RUN npm run build
 
 
-FROM nginx AS react-nginx
-COPY --from=build /app/build /usr/share/nginx/html
+FROM node:alpine AS react-serve
+COPY --from=build /app/build /app
+RUN npm install -g serve
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["serve", "-s", "/app", "-l", "80"]
