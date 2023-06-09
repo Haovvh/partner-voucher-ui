@@ -175,6 +175,9 @@ export default function ProductCategory() {
 
   const isNotFound = !filteredDatas.length && !!filterName;
   useEffect(() =>{
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
     productcategoryService.ProductCategoryAvalible().then(
       response =>{
         if(response.data  && response.data.success) {

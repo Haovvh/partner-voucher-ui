@@ -5,12 +5,9 @@ import { styled } from '@mui/material/styles';
 import {  Container, Typography } from '@mui/material';
 // hooks
 import useResponsive from '../hooks/useResponsive';
-// components
-import Logo from '../components/logo';
 
 // sections
 import { LoginForm } from '../sections/auth/login';
-import account from '../services/partner.service';
 // ----------------------------------------------------------------------
 
 const StyledRoot = styled('div')(({ theme }) => ({
@@ -44,7 +41,7 @@ const StyledContent = styled('div')(({ theme }) => ({
 export default function Login() {
   const mdUp = useResponsive('up', 'md');
   useEffect(()=>{
-    account.Logout();
+    localStorage.clear();
   })
   return (
     <>

@@ -5,12 +5,14 @@ import { useEffect } from 'react';
 
 import {  Container, Typography } from '@mui/material';
 // components
-
+import headerService from '../services/header.service';
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
   useEffect(()=>{
-    
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
   })
 
   return (

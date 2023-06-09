@@ -356,6 +356,9 @@ export default function EditCampaign(props) {
 
 
   useEffect(() =>{
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
     if(props.editDisplay === true && props.campaignIdText) {
       getService.getValuesGameRule().then(
         response => {

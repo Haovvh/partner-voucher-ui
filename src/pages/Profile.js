@@ -23,8 +23,7 @@ import Label from '../components/label';
 import { checkPassword } from '../utils/check';
 import { convertStringToDate } from '../utils/formatTime';
 import noti from '../utils/noti';
-// ----------------------------------------------------------------------
-const ALERT_PASSWORD = "Mật khẩu phải có chữ hoa, thường, số và lớn hơn 8 ký tự";
+
 
 export default function Profile() {
   
@@ -176,12 +175,12 @@ const handleChangeOtp = (event) => {
       response => {
         if(response.data && response.data.success === true) {
           
-          alert("Update Password Success")
+          alert(noti.UPDATE_PASSWORD)
           setOpenOtp(false)
-          setOtp(ALERT_PASSWORD);
+          
         } 
       }, error => {
-        alert("Wrong OTP");
+        alert(noti.WRONG_OTP);
         setSuccess(!success)
       }
     )
@@ -201,11 +200,11 @@ const handleChangeOtp = (event) => {
           }
         )
       } else {
-        alert("")
+        alert(noti.ALERT_PASSWORD)
       }
       
     } else {
-      alert("Vui lòng nhập thông tin đầy đủ");
+      alert(noti.MISSING_DATA);
     }
     
   }
@@ -286,7 +285,7 @@ const handleChangeOtp = (event) => {
         partnerService.UpdatePartner(name, gender, dateOfBirth, address, partnerType, company).then(
           response => {
             if(response.data && response.data.success === true) {
-              alert("Update Success");
+              alert(noti.EDIT_SUCCESS);
             }
           }, error => {
             setSuccess(!success)
@@ -296,7 +295,7 @@ const handleChangeOtp = (event) => {
         partnerService.UpdatePartner(name, gender, dateOfBirth, address, partnerType).then(
           response => {
             if(response.data && response.data.success === true) {
-              alert("Update Success");
+              alert(noti.EDIT_SUCCESS);
 
             }
           }, error => {
@@ -306,7 +305,7 @@ const handleChangeOtp = (event) => {
       }
       
     } else {
-      alert("Vui lòng nhập đầy đủ thông tin")
+      alert(noti.MISSING_DATA)
     }
   }
 
@@ -325,7 +324,7 @@ const handleChangeOtp = (event) => {
           partnerService.changePassword(oldPassword, newPassword).then(
             response => {
               if(response.data && response.data.success === true) {
-                alert("Đổi mật khẩu thành công")
+                alert(noti.EDIT_SUCCESS)
                 setOpen(false)
                 setOldPassword("");
                 setNewPassword("")
@@ -336,121 +335,123 @@ const handleChangeOtp = (event) => {
             }
           )
         } else {
-          alert(ALERT_PASSWORD)
+          alert(noti.ALERT_PASSWORD)
         }
         
       } else {
-        alert("Mật khẩu mới và xác nhận mật khẩu không giống nhau?")
+        alert(noti.SAMP_PASSWORD)
       }
     } else {
-      alert("Vui lòng nhập thông tin")
+      alert(noti.MISSING_DATA)
     }
   }  
   useEffect (()=>{    
-
-     getService.getValuesGender().then(
-      response =>{
-        if(response.data && response.status === 200) {
-          const arrayGender  = response.data.data.genderValue;        
-             
-          setGenders(arrayGender)
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    } else {
+      getService.getValuesGender().then(
+        response =>{
+          if(response.data && response.status === 200) {
+            const arrayGender  = response.data.data.genderValue;        
+              
+            setGenders(arrayGender)
+          }
+          
+        }, error => {
+          console.log(error)
         }
-        
-      }, error => {
-        console.log(error)
-      }
-    )
+      )
     
-    
-    getService.getAddressProvines().then(
-      response =>{
-        if(response.data && response.status === 200){
-          setProvines(response.data.data.provines);   
-          setProvinesCompany(response.data.data.provines);       
+      getService.getAddressProvines().then(
+        response =>{
+          if(response.data && response.status === 200){
+            setProvines(response.data.data.provines);   
+            setProvinesCompany(response.data.data.provines);       
+          }
         }
-      }
-    )
-    partnerService.PartnerInfo().then(
-      response => {
-        if (response.data && response.data.success === true) {
-          const temp = response.data.data.account
-          console.log(temp)
-          setName(temp.name)          
-          setGender(temp.gender)
-          setDateBirthDate(temp.dateOfBirth)
-          setDateOfBirthText(convertStringToDate(temp.dateOfBirth))          
-          setProvineId(temp.address.ward.province.id )
-          setPartnerType(temp.partnerType)
-          getService.getAddressDistrictProvineId(temp.address.ward.province.id).then(
-            response =>{
-              if(response.status === 200 && response.data.data) {
-                setDistricts(response.data.data.districts);
-                setDistrictId(temp.address.ward.district.id)
-                getService.getAddressWardDistrictId(temp.address.ward.district.id).then(
-                  response =>{
-                    if(response.status === 200 && response.data.data) {                      
-                      setWards(response.data.data.wards);
-                      setAddress({
-                        wardId:temp.address.ward.id,
-                        street: temp.address.street
-                      })
-                    }        
-                  }
-                )
-              } 
-            }
-          )
-          if (temp.partnerType === "Company") {
-            setShowCompany(true)
-            setCompanyName(temp.company.name)
-            setBusinessCode(temp.company.businessCode)
-            setProvineCompanyId(temp.company.address.ward.province.id)
-            getService.getAddressDistrictProvineId(temp.company.address.ward.province.id).then(
+      )
+      partnerService.PartnerInfo().then(
+        response => {
+          if (response.data && response.data.success === true) {
+            const temp = response.data.data.account
+            console.log(temp)
+            setName(temp.name)          
+            setGender(temp.gender)
+            setDateBirthDate(temp.dateOfBirth)
+            setDateOfBirthText(convertStringToDate(temp.dateOfBirth))          
+            setProvineId(temp.address.ward.province.id )
+            setPartnerType(temp.partnerType)
+            getService.getAddressDistrictProvineId(temp.address.ward.province.id).then(
               response =>{
                 if(response.status === 200 && response.data.data) {
-                  setDistrictsCompany(response.data.data.districts);
-                  setDistrictCompanyId(temp.company.address.ward.district.id)
-                  getService.getAddressWardDistrictId(temp.company.address.ward.district.id).then(
+                  setDistricts(response.data.data.districts);
+                  setDistrictId(temp.address.ward.district.id)
+                  getService.getAddressWardDistrictId(temp.address.ward.district.id).then(
                     response =>{
                       if(response.status === 200 && response.data.data) {                      
-                        setWardsCompany(response.data.data.wards);
-                        setWardId(temp.company.address.ward.id);
-                        setStreet(temp.company.address.street)                        
+                        setWards(response.data.data.wards);
+                        setAddress({
+                          wardId:temp.address.ward.id,
+                          street: temp.address.street
+                        })
                       }        
                     }
                   )
                 } 
               }
             )
+            if (temp.partnerType === "Company") {
+              setShowCompany(true)
+              setCompanyName(temp.company.name)
+              setBusinessCode(temp.company.businessCode)
+              setProvineCompanyId(temp.company.address.ward.province.id)
+              getService.getAddressDistrictProvineId(temp.company.address.ward.province.id).then(
+                response =>{
+                  if(response.status === 200 && response.data.data) {
+                    setDistrictsCompany(response.data.data.districts);
+                    setDistrictCompanyId(temp.company.address.ward.district.id)
+                    getService.getAddressWardDistrictId(temp.company.address.ward.district.id).then(
+                      response =>{
+                        if(response.status === 200 && response.data.data) {                      
+                          setWardsCompany(response.data.data.wards);
+                          setWardId(temp.company.address.ward.id);
+                          setStreet(temp.company.address.street)                        
+                        }        
+                      }
+                    )
+                  } 
+                }
+              )
+            }
+            
+          }
+        }, error => {
+          if(error.response && error.response.status === 401) {
+            console.log(error.response)
+            const token = headerService.refreshToken();
+            partnerService.refreshToken(token).then(
+              response => {
+                console.log(response.data)
+                if(response.data && response.data.success === true) {                
+                  localStorage.setItem("token", JSON.stringify(response.data.data));
+                  setSuccess(!success)
+                }
+              }, error => {
+                console.log(error)
+              }
+            )
           }
           
         }
-      }, error => {
-        if(error.response && error.response.status === 401) {
-          console.log(error.response)
-          const token = headerService.refreshToken();
-          partnerService.refreshToken(token).then(
-            response => {
-              console.log(response.data)
-              if(response.data && response.data.success === true) {                
-                localStorage.setItem("token", JSON.stringify(response.data.data));
-                setSuccess(!success)
-              }
-            }, error => {
-              console.log(error)
-            }
-          )
+      )
+      getService.getValuesPartnerType().then(
+        response =>{
+          if(response.status === 200 && response.data.data) {          
+            setPartnerTypes(response.data.data.partnerTypValue);
+          }        
         }
-        
-      }
-    )
-    getService.getValuesPartnerType().then(
-      response =>{
-        if(response.status === 200 && response.data.data) {          
-          setPartnerTypes(response.data.data.partnerTypValue);
-        }        
-      }
-    )    
+      )   
+    } 
 
   },[success])
 

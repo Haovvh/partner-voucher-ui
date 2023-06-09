@@ -422,7 +422,9 @@ export default function Store() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
   useEffect(() =>{
-    
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
     getService.getAddressProvines().then(
       response =>{
         if(response.data && response.data.success && response.data.data){

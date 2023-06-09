@@ -24,21 +24,21 @@ import Report from './pages/report/report';
 // ----------------------------------------------------------------------
 
 export default function Router() {
-  const isUser = (Service.GetUser() && Service.refreshToken() !== "")
+  
   const routes = useRoutes([
     {
       path: '',
-      element: (isUser)? <DashboardLayout /> : <SimpleLayout />,
+      element:  <DashboardLayout /> ,
       children: [
-        { element: <Navigate to="/app" />, index: true },
-        { path: 'app', element: (isUser)? <DashboardAppPage /> :<PageRole />},
-        { path: 'game', element: (isUser)? <Game /> :<PageRole /> },
-        { path: 'voucher', element: (isUser)? <Voucher /> :<PageRole />},
-        { path: 'campaign', element: (isUser)? <Campaign /> :<PageRole/>},
-        { path: 'productcategory', element: (isUser)? <ProductCategory /> :<PageRole/>},
-        { path: 'productitem', element: (isUser)? <ProductItem /> :<PageRole/>},
-        { path: 'store', element: (isUser)? <Store /> :<PageRole/>},
-        { path: 'report', element: (isUser)? <Report /> :<PageRole/>},
+        { element: <Navigate to="app" />, index: true },
+        { path: 'app', element:  <DashboardAppPage /> },
+        { path: 'game', element:  <Game />  },
+        { path: 'voucher', element:  <Voucher /> },
+        { path: 'campaign', element:  <Campaign /> },
+        { path: 'productcategory', element:  <ProductCategory /> },
+        { path: 'productitem', element:  <ProductItem /> },
+        { path: 'store', element:  <Store /> },
+        { path: 'report', element:  <Report /> },
         { path: 'logout', element:  <Logout /> },
         { path: 'profile', element:  <Profile />},
       ],
@@ -56,7 +56,7 @@ export default function Router() {
     {
       element: <SimpleLayout />,
       children: [
-        { element: <Navigate to="/dashboard/app" />, index: true },
+        { element: <Navigate to="app" />, index: true },
         { path: '404', element: <Page404 /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],

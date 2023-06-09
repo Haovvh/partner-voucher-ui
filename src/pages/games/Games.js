@@ -185,6 +185,9 @@ export default function Game() {
 
   const isNotFound = !filteredUsers.length && !!filterName;
   useEffect(() =>{
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
     gameService.GameAll().then(
       response =>{
         if( response.data && response.data.success && response.data.data) {          

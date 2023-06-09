@@ -149,16 +149,16 @@ export default function Voucher() {
     
   };
   const handleClickDelete = (id) => {
-    if(window.confirm(`Are you want delete `)) {
+    if(window.confirm(noti.CONFIRM_DELETE)) {
       voucherService.DeleteVoucherById(id).then(
         response => { 
           if (response.data && response.data.success) {
-            alert("Delete Success")
+            alert(noti.DELETE_SUCCESS)
             setSuccess(!success);
           }
           
         }, error => {
-          alert("Dữ liệu đã tồn tại không thể xóa")
+          alert(noti.ERROR)
           setSuccess(!success);
         }
       )
@@ -208,14 +208,14 @@ export default function Voucher() {
         voucherService.PostVoucher(name, description).then(
           response => { 
             if(response.data && response.data.success) {
-              alert("Create Success")
+              alert(noti.CREATE_SUCCESS)
               setSuccess(!success)
               setOpen(false);  
               clearScreen();    
             }
             
           }, error => {
-            alert("Dữ liệu không hợp lệ")
+            alert(noti.WRONG_DATA)
             setSuccess(!success)
           }
         )
@@ -223,20 +223,20 @@ export default function Voucher() {
         voucherService.PutVoucherById(name, description, voucherId).then(
           response => { 
             if(response.data && response.data.success) {
-              alert("Update Success")
+              alert(noti.EDIT_SUCCESS)
               setSuccess(!success)
               setOpen(false);  
               clearScreen();  
             }
             
           }, error => {
-            alert("Dữ liệu không hợp lệ")
+            alert(noti.WRONG_DATA)
             setSuccess(!success)
           }
         )
       }  
     } else {
-      alert("Vui lòng nhập đầy đủ thông tin")
+      alert(noti.MISSING_DATA)
     }
   }
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - vouchers.length) : 0;
@@ -245,6 +245,9 @@ export default function Voucher() {
 
   const isNotFound = !filteredDatas.length && !!filterName;
   useEffect(() =>{
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
     voucherService.VoucherAllByStore().then(
       response =>{
         if(response.data  && response.data.success) { 

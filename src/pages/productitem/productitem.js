@@ -143,7 +143,7 @@ export default function ProductItem() {
         productitemService.PutEnableProductItemById(productItemId).then(
           response => {
             if(response.data  && response.data.success === true) {
-              alert("Enable Success");
+              alert(noti.ENABLE_SUCCESS);
               setOpenEnable(false)
               setSuccess(!success)
               setIsEnable("")
@@ -155,7 +155,7 @@ export default function ProductItem() {
         productitemService.PutDisableProductItemById(productItemId).then(
           response => {
             if(response.data  && response.data.success === true) {
-              alert("Disable Success");
+              alert(noti.DISABLE_SUCCESS);
               setOpenEnable(false)
               setSuccess(!success)
               setIsEnable("")
@@ -165,7 +165,7 @@ export default function ProductItem() {
         )        
       }
     } else {
-      alert("Please choose Status");
+      alert(noti.CONFIRM_CHOOSE_STATUS);
     }
   }
 
@@ -184,10 +184,8 @@ export default function ProductItem() {
   }
   const handleChangeImageURL = (event) => {
     const file = event.target.files[0];
-    console.log(file)
     const formData = new FormData();
     formData.append("file", file)
-    console.log("==>",formData)
     imageService.ImageUpload(formData).then(
       response =>{
         if (response.data && response.data.success === true) {
@@ -238,16 +236,16 @@ export default function ProductItem() {
     )
   };
   const handleClickDelete = (id) => {
-    if(window.confirm("Are you want delete")) {
+    if(window.confirm(noti.CONFIRM_DELETE)) {
       productitemService.DeleteProductItemById(id).then(
         response => { 
           if (response.data && response.data.success) {
-            alert("Delete Success")
+            alert(noti.DELETE_SUCCESS)
             setSuccess(!success);
           }
           
         }, error => {
-          alert("Dữ liệu đã tồn tại.")
+          alert(noti.ERROR)
           setSuccess(!success)
         }
       )
@@ -303,13 +301,13 @@ export default function ProductItem() {
         productitemService.PostProductItem(name, description,productCategoryId, price, imageUrl).then(
           response => {
             if(response.data && response.data.success) {
-              alert("Create Success")
+              alert(noti.CREATE_SUCCESS)
               setSuccess(!success);          
               clearInput();
               setOpen(false);    
             }          
           }, error => {
-            alert("Vui lòng kiểm tra dữ liệu")
+            alert(noti.WRONG_DATA)
             
             setSuccess(!success)
           }
@@ -318,14 +316,14 @@ export default function ProductItem() {
         productitemService.PutProductItemById(name, description, productCategoryId, price, imageUrl,  productItemId).then(
           response => {
             if(response.data && response.data.success) {
-              alert("Update Success")
+              alert(noti.EDIT_SUCCESS)
               setSuccess(!success);          
               clearInput();
               setOpen(false);    
             }
             
           }, error => {
-            alert("Vui lòng kiểm tra dữ liệu")
+            alert(noti.WRONG_DATA)
             
             setSuccess(!success)
           }
@@ -342,6 +340,9 @@ export default function ProductItem() {
 
   const isNotFound = !filteredDatas.length && !!filterName;
   useEffect(() =>{
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
     productcategoryService.ProductCategoryAvalible().then(
       response => {
         if(response.data && response.data.success) {

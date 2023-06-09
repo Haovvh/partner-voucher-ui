@@ -102,8 +102,9 @@ function applySortFilter(array, comparator, query) {
 
 const statusEnable = ["Enable             ", "Disable          "]
 
-export default function Campaign() {  
 
+export default function Campaign() {  
+  
   const [edit, setEdit] = useState(false);
   
   const [success, setSuccess] = useState(false);
@@ -147,7 +148,7 @@ export default function Campaign() {
           }
           
         }, error => {
-          alert("Có lỗi")
+          alert(noti.ERROR)
           setSuccess(!success)
         }
       )
@@ -244,6 +245,9 @@ export default function Campaign() {
 
   const isNotFound = !filteredDatas.length && !!filterName;
   useEffect(() =>{
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
     CampaignService.CampaignAllByStore().then(
       response =>{
         if(response.data  && response.data.success) {          

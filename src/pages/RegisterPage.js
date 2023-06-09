@@ -1,3 +1,4 @@
+import React,{ useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 // @mui
 import { styled } from '@mui/material/styles';
@@ -5,10 +6,10 @@ import {  Container, Typography} from '@mui/material';
 // hooks
 import useResponsive from '../hooks/useResponsive';
 // components
-import Logo from '../components/logo';
 
 // sections
 import { RegisterForm } from '../sections/auth/register';
+
 
 // ----------------------------------------------------------------------
 
@@ -40,9 +41,11 @@ const StyledContent = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const mdUp = useResponsive('up', 'md');
-
+  useEffect(()=>{
+    localStorage.clear();
+  })
   return (
     <>
       <Helmet>

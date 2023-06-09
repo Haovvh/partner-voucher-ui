@@ -354,6 +354,9 @@ export default function CampaignDetail(props) {
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tempVoucher.length) : 0;
  
   useEffect(() =>{
+    if(!headerService.GetUser() || headerService.refreshToken() === ""){
+      window.location.assign('/login')
+    }
     if(props.load === true) {
         voucherService.VoucherAllByStore().then(
             response =>{
