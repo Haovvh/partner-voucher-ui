@@ -90,7 +90,6 @@ export default function EditCampaign(props) {
 
   const [orderBy, setOrderBy] = useState('name');
 
-  const [filterName, setFilterName] = useState('');
   const [enable, setEnable ] = useState(false)
 
   const [vouchers, setVouchers] = useState([])
@@ -195,7 +194,6 @@ export default function EditCampaign(props) {
   }
   const handleClickEdit = (id) => {
     const temp = tempVoucher.filter(e =>e.id === id)[0]
-    console.log(temp)
     setOpen(true)
     setVoucherId(temp.id);
     setDescriptionVoucher(temp.description)
@@ -214,7 +212,7 @@ export default function EditCampaign(props) {
           if(response.data && response.data.success === true) {
             const temp = response.data.data.campaignVoucherSeriesList;
             console.log(response.data.data.campaignVoucherSeriesList)            
-            alert(noti.DELETE_SUCCESS)
+            alert(response.data.message);
             setTempVoucher(temp)
           } 
         } , error => {
@@ -299,8 +297,7 @@ export default function EditCampaign(props) {
             CampaignService.PutCampaignInfoByCampaignId(campaignId, name, description, startDate, endDate, gameId, winRate, gameRuleId, numberOfLimit, enable).then(
                 response => {
                     if(response.data && response.data.success === true) {
-                        alert(noti.EDIT_SUCCESS)
-                        
+                      alert(response.data.message);                        
                     }
                 }, error => {
                   if(error.response && error.response.data && !error.response.data.success ) {
@@ -328,7 +325,7 @@ export default function EditCampaign(props) {
                 const temp = response.data.data.campaignVoucherSeriesList;
                 setTempVoucher(temp)
                 
-                alert(noti.EDIT_SUCCESS)
+                alert(response.data.message);
                 setOpen(false)
                 clearScreen();
               }
@@ -345,7 +342,7 @@ export default function EditCampaign(props) {
               if(response.data && response.data.success === true) {
                 const temp = response.data.data.campaignVoucherSeriesList;
                 setTempVoucher(temp)
-                alert(noti.CREATE_SUCCESS)
+                alert(response.data.message);
                 setOpen(false)
                 clearScreen();
               }

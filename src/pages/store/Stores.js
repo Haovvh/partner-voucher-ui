@@ -320,12 +320,15 @@ export default function Store() {
         storeService.StoreEnableStoreId().then(
           response => {
             if(response.data  && response.data.success === true) {
-              alert(noti.ENABLE_SUCCESS);
+              alert(response.data.message);
               setOpenEnable(false)
               setSuccess(!success)
               clearScreen()
             }
           }, error =>{
+            if(error.response && error.response.data && !error.response.data.success ) {
+              alert(error.response.data.message)
+            }  
             setSuccess(!success);
           }
         )
@@ -335,13 +338,16 @@ export default function Store() {
         storeService.StoreDisableStoreId().then(
           response => {
             if(response.data  && response.data.success === true) {
-              alert(noti.DISABLE_SUCCESS);
+              alert(response.data.message);
               setOpenEnable(false)
               setSuccess(!success)
               clearScreen();
             }
             
           }, error => {
+            if(error.response && error.response.data && !error.response.data.success ) {
+              alert(error.response.data.message)
+            }  
             setSuccess(!success);
           }
         )        
@@ -360,7 +366,7 @@ export default function Store() {
             response => {
               console.log(response)
               if(response.data &&  response.data.success) {
-                alert(noti.CREATE_SUCCESS)   
+                alert(response.data.message);  
                 setOpen(false);  
                 setSuccess(!success)
                 clearScreen();          
@@ -378,7 +384,7 @@ export default function Store() {
             response => {
               console.log(response)
               if(response.data &&  response.data.success) {
-                alert(noti.EDIT_SUCCESS)   
+                alert(response.data.message);  
                 setOpen(false);  
                 setSuccess(!success)     
                 clearScreen();    
@@ -388,8 +394,7 @@ export default function Store() {
               console.log(error.response)
               if(error.response && error.response.data && !error.response.data.success ) {
                 alert(error.response.data.message)
-              }
-              
+              }              
               setSuccess(!success)
             }
           )

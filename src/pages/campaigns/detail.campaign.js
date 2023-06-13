@@ -280,7 +280,7 @@ export default function CampaignDetail(props) {
             CampaignService.PostCampaign(campaignInfo, campaignVoucherSeriesList).then(
                 response => {
                     if(response.data && response.data.success) {
-                        alert(noti.CREATE_SUCCESS)
+                      alert(response.data.message);
                         window.location.assign('/campaign')
                     }
                 }, error => {

@@ -143,7 +143,7 @@ export default function ProductItem() {
         productitemService.PutEnableProductItemById(productItemId).then(
           response => {
             if(response.data  && response.data.success === true) {
-              alert(noti.ENABLE_SUCCESS);
+              alert(response.data.message);
               setOpenEnable(false)
               setSuccess(!success)
               setIsEnable("")
@@ -155,7 +155,7 @@ export default function ProductItem() {
         productitemService.PutDisableProductItemById(productItemId).then(
           response => {
             if(response.data  && response.data.success === true) {
-              alert(noti.DISABLE_SUCCESS);
+              alert(response.data.message);
               setOpenEnable(false)
               setSuccess(!success)
               setIsEnable("")
@@ -190,8 +190,7 @@ export default function ProductItem() {
       response =>{
         if (response.data && response.data.success === true) {
           const temp = response.data.data.imagePath
-          console.log(temp)
-          console.log(process.env.REACT_APP_API_URL)
+          
           setImageUrl(temp)
           setUrlImage(`${process.env.REACT_APP_API_URL}${temp}`)
         }
@@ -220,7 +219,7 @@ export default function ProductItem() {
         if (response.data && response.data.success) {
           const temp = response.data.data.productItem
           setOpen(true)  
-          console.log(temp)
+          
           setProductItemId(temp.id)
           setName(temp.name);
           setDescription(temp.description);
@@ -240,12 +239,12 @@ export default function ProductItem() {
       productitemService.DeleteProductItemById(id).then(
         response => { 
           if (response.data && response.data.success) {
-            alert(noti.DELETE_SUCCESS)
+            alert(response.data.message);
             setSuccess(!success);
           }
           
         }, error => {
-          alert(noti.ERROR)
+          alert(error.response.data.message);
           setSuccess(!success)
         }
       )
