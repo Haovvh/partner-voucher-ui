@@ -218,9 +218,12 @@ export default function EditCampaign(props) {
             setTempVoucher(temp)
           } 
         } , error => {
-          alert(noti.ERROR)
+          if(error.response && error.response.data && !error.response.data.success ) {
+            alert(error.response.data.message)
+          }
+          
           setSuccess(!success)
-          console.log(error)
+          
         }
       ) 
     }
@@ -300,7 +303,10 @@ export default function EditCampaign(props) {
                         
                     }
                 }, error => {
-                    alert(noti.ERROR)
+                  if(error.response && error.response.data && !error.response.data.success ) {
+                    alert(error.response.data.message)
+                  }
+                  
                 }
             )
         } else {
@@ -327,7 +333,9 @@ export default function EditCampaign(props) {
                 clearScreen();
               }
             }, error => {
-              alert(noti.ERROR)
+              if(error.response && error.response.data && !error.response.data.success ) {
+                alert(error.response.data.message)
+              }
             }
           )
         } else {
@@ -342,7 +350,10 @@ export default function EditCampaign(props) {
                 clearScreen();
               }
             }, error => {
-              alert(noti.ERROR)
+              if(error.response && error.response.data && !error.response.data.success ) {
+                alert(error.response.data.message)
+              }
+             
             }
           )
         }
@@ -421,6 +432,16 @@ export default function EditCampaign(props) {
                     if(response.data && response.data.success === true) {                
                       localStorage.setItem("token", JSON.stringify(response.data.data));
                       setSuccess(!success)
+                    } else {
+                      partnerService.refreshToken(token).then(
+                        response => {
+                          if(response.data && response.data.success === true) {                
+                            localStorage.setItem("token", JSON.stringify(response.data.data));
+                            setSuccess(!success)
+                          } else {
+                            window.location.assign('/login')
+                          }
+                        })
                     }
                   }, error => {
                     console.log(error)
